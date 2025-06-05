@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mortgages</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h2>Mortgages</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Passport ID</th>
+        <th>Amount</th>
+        <th>Current Amount</th>
+        <th>Term (months)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="mortgage : ${mortgages}">
+        <td th:text="${mortgage.mortgageHolderPassportId}"></td>
+        <td th:text="${mortgage.amountOfMortgage}"></td>
+        <td th:text="${mortgage.currentMortgageAmount}"></td>
+        <td th:text="${mortgage.mortgageTerm}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

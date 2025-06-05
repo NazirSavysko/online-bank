@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debit Cards</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h2>Debit Cards</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Passport ID</th>
+        <th>Card Number</th>
+        <th>Expiration Date</th>
+        <th>Balance</th>
+        <th>CVV</th>
+        <th>Issue Date</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="card : ${debitCards}">
+        <td th:text="${card.cardHolderPassportId}"></td>
+        <td th:text="${card.cardNumber}"></td>
+        <td th:text="${card.expirationDate}"></td>
+        <td th:text="${card.balance}"></td>
+        <td th:text="${card.cvv}"></td>
+        <td th:text="${card.issueDate}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

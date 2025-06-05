@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auto Loans</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h2>Auto Loans</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Passport ID</th>
+        <th>Amount</th>
+        <th>Current Amount</th>
+        <th>Term (months)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="loan : ${autoLoans}">
+        <td th:text="${loan.creditHolderPassportId}"></td>
+        <td th:text="${loan.amountOfCredit}"></td>
+        <td th:text="${loan.currentCreditAmount}"></td>
+        <td th:text="${loan.creditTermInMonths}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
