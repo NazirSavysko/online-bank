@@ -18,8 +18,8 @@
     </thead>
     <tbody>
     <tr th:each="loan : ${autoLoans}">
-        <td th:text="${loan.creditHolderPassportId}"></td>
-        <td th:text="${loan.amountOfCredit}"></td>
+        <td th:text="${loan.getCreditHolderPassportNumber}"></td>
+        <td th:text="${loan.getCreditAmount}"></td>
         <td th:text="${loan.currentCreditAmount}"></td>
         <td th:text="${loan.creditTermInMonths}"></td>
     </tr>

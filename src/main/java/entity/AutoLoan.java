@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public final class AutoLoan {
     private int id;
-    private BigDecimal amountOfCredit;
+    private BigDecimal creditAmount;
     private BigDecimal currentCreditAmount;
     private int creditTermInMonths;
-    private String creditHolderPassportId;
+    private String creditHolderPassportNumber;
 }

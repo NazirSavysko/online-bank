@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 
-
 @Repository
 @AllArgsConstructor
 public final class UserDataBaseDAOImpl implements UserDAO {
@@ -24,14 +23,14 @@ public final class UserDataBaseDAOImpl implements UserDAO {
     public List<User> getAllUsers() {
         final String sqlForGettingAllUsers = "SELECT * FROM bank_user";
 
-        return jdbcTemplate.query(sqlForGettingAllUsers,this::userRowMapper);
+        return jdbcTemplate.query(sqlForGettingAllUsers, this::userRowMapper);
     }
 
     @Override
     public Optional<User> getUserByPassportNumber(final String passportNumber) {
         final String sqlForGettingUserByPassportNumber = "SELECT * FROM bank_user WHERE passport_number = ?";
         final List<User> users = jdbcTemplate
-                .query(sqlForGettingUserByPassportNumber,this::userRowMapper, passportNumber);
+                .query(sqlForGettingUserByPassportNumber, this::userRowMapper, passportNumber);
 
         return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
     }
@@ -46,7 +45,7 @@ public final class UserDataBaseDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean updateUser(final String passportNumber,final User user) {
+    public boolean updateUser(final String passportNumber, final User user) {
         final String sqlForUpdatingUser = "UPDATE bank_user SET username = ?, birthday =?,gender = ? WHERE passport_number = ?";
         int rowsAffected = jdbcTemplate.update(sqlForUpdatingUser, user.getUsername(), user.getDateOfBirth(),
                 user.getGender(), passportNumber);
@@ -65,11 +64,7 @@ public final class UserDataBaseDAOImpl implements UserDAO {
         try {
             user.setUsername(rs.getString("username"));
             user.setGender(Gender.valueOf(rs.getString("gender")));
-
-            Date sqlDate = rs.getDate("birthdate");
-            if (sqlDate != null) {
-                user.setDateOfBirth(sqlDate.toLocalDate());
-            }
+            user.setDateOfBirth(rs.getDate("birthdate").toLocalDate());
             user.setPassportNumber(rs.getString("passport_number"));
         } catch (Exception e) {
             e.printStackTrace();

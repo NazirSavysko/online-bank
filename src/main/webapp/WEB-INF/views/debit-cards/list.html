@@ -20,7 +20,7 @@
     </thead>
     <tbody>
     <tr th:each="card : ${debitCards}">
-        <td th:text="${card.cardHolderPassportId}"></td>
+        <td th:text="${card.cardHolderPassportNumber}"></td>
         <td th:text="${card.cardNumber}"></td>
         <td th:text="${card.expirationDate}"></td>
         <td th:text="${card.balance}"></td>
