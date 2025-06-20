@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New User – Bank</title>
+</head>
+<body>
+<h1>Create New User</h1>
+
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+
+<form method="post" data-th-action="@{/users/create}">
+    <label>
+        Username:<br>
+        <input type="text" name="userName" data-th-value="${payload?.userName}">
+    </label><br>
+
+    <label>
+        Passport Number:<br>
+        <input type="text" name="passportNumber" data-th-value="${payload?.passportNumber}">
+    </label><br>
+
+    <label>
+        Gender:<br>
+        <select name="gender" data-th-value="${payload?.gender}">
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+        </select>
+    </label><br>
+
+    <label>
+        Date of Birth:<br>
+        <input type="date" name="dateOfBirth" data-th-value="${payload?.dateOfBirth}">
+    </label><br>
+
+    <button type="submit">Create</button>
+</form>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User</title>
+</head>
+<body>
+<h1>User Information</h1>
+<ul>
+    <li><strong>User's passport number</strong>: <span data-th-text="${user.passportNumber}"></span></li>
+    <li><strong>User's gender</strong>: <span data-th-text="${user.gender}"></span></li>
+    <li><strong>User's birthday</strong>: <span data-th-text="${user.dateOfBirth}"></span></li>
+    <li><strong>User's username</strong>: <span data-th-text="${user.userName}"></span></li>
+</ul>
+<br>
+<a href="/users/list">
+    <button>Go back to Users List</button>
+</a>
+</body>
+</html>

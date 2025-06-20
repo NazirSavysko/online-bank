@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update User – Bank</title>
+</head>
+<body>
+<h1>Update User</h1>
+
+<div data-th-if="${errors}">
+  <h2>Validation Errors</h2>
+  <ul>
+    <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+  </ul>
+</div>
+
+<form method="post" data-th-action="@{/users/{userPassportNumber}/edit(userPassportNumber=${user.passportNumber})}">
+  <input type="hidden" name="_method" value="put">
+  <label>
+    Username:<br>
+    <input type="text" name="userName" data-th-value="${payload != null ? payload?.userName : user?.userName}">
+  </label><br>
+
+  <label hidden="hidden">
+    Passport Number:<br>
+    <input type="text" name="passportNumber" data-th-value="${user?.passportNumber}">
+  </label>
+
+  <label>
+    Gender:<br>
+    <select name="gender" data-th-value="${payload != null ? payload?.gender : user?.getGender}">
+      <option value="MALE">Male</option>
+      <option value="FEMALE">Female</option>
+    </select>
+  </label><br>
+
+  <label>
+    Date of Birth:<br>
+    <input type="date" name="dateOfBirth" data-th-value="${payload != null ? payload?.dateOfBirth : user?.dateOfBirth}">
+  </label><br>
+
+  <button type="submit">Update</button>
+</form>
+</body>
+</html>

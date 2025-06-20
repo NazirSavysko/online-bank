@@ -14,18 +14,39 @@
         <th>Gender</th>
         <th>Birthdate</th>
         <th>Passport Number</th>
+        <th>Updating user</th>
+        <th>Deleting user</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="user : ${users}">
-        <td th:text="${user.username}"></td>
+        <td th:text="${user.getUserName}"></td>
         <td th:text="${user.gender}"></td>
         <td th:text="${user.dateOfBirth}"></td>
         <td th:text="${user.passportNumber}"></td>
+        <td>
+            <a data-th-href="@{/users/{userPassportNumber}/edit(userPassportNumber=${user.passportNumber})}">
+                <button>Update</button>
+            </a>
+        </td>
+        <td>
+            <form method="post"
+                  data-th-action="@{/users/{userPassportNumber}/delete(userPassportNumber=${user.passportNumber})}">
+                <button type="submit">delete</button>
+                <input type="hidden" name="_method" value="delete">
+            </form>
+        </td>
     </tr>
     </tbody>
 </table>
 <br>
-<a th:href="/">=<button>Go back</button></a>
+<a href="/">
+    <button>Go back</button>
+</a>
+<br>
+<br>
+<a href="/users/create">
+    <button>Create New User</button>
+</a>
 </body>
 </html>

@@ -11,14 +11,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.*;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
+import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
 import javax.sql.DataSource;
 import java.util.Objects;
 
 @Configuration
-@ComponentScan(basePackages = {"controller", "dao.impl", "service.impl"})
+@ComponentScan(basePackages = {"controller", "dao.impl", "service.impl", "utils"})
 @PropertySource("classpath:application.properties")
 @EnableWebMvc
 public class SpringConfig implements WebMvcConfigurer {
@@ -77,4 +77,5 @@ public class SpringConfig implements WebMvcConfigurer {
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
+
 }
