@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debit card</title>
+</head>
+<body>
+<h1>Information of debit card</h1>
+<ul>
+    <li><strong>Card Number:</strong> <span data-th-text="${debitCard.cardNumber}"></span></li>
+    <li><strong>Passport Number:</strong> <span data-th-text="${debitCard.cardHolderPassportNumber}"></span></li>
+    <li><strong>Issue Date:</strong> <span data-th-text="${debitCard.issueDate}"></span></li>
+    <li><strong>Expiration Date:</strong> <span data-th-text="${debitCard.expirationDate}"></span></li>
+    <li><strong>CVV:</strong> <span data-th-text="${debitCard.cvv}"></span></li>
+    <li><strong>Balance:</strong> <span data-th-text="${debitCard.balance}"></span></li>
+</ul>
+</body>
+</html>

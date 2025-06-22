@@ -18,7 +18,7 @@
   <input type="hidden" name="_method" value="put">
   <label>
     Username:<br>
-    <input type="text" name="userName" data-th-value="${payload != null ? payload?.userName : user?.userName}">
+    <input type="text" name="userName" data-th-value="${userPayload != null ? userPayload?.userName : user?.userName}">
   </label><br>
 
   <label hidden="hidden">
@@ -28,7 +28,7 @@
 
   <label>
     Gender:<br>
-    <select name="gender" data-th-value="${payload != null ? payload?.gender : user?.getGender}">
+    <select name="gender" data-th-value="${userPayload != null ? userPayload?.gender : user?.getGender}">
       <option value="MALE">Male</option>
       <option value="FEMALE">Female</option>
     </select>
@@ -36,7 +36,7 @@
 
   <label>
     Date of Birth:<br>
-    <input type="date" name="dateOfBirth" data-th-value="${payload != null ? payload?.dateOfBirth : user?.dateOfBirth}">
+    <input type="date" name="dateOfBirth" data-th-value="${userPayload != null ? userPayload?.dateOfBirth : user?.dateOfBirth}">
   </label><br>
 
   <button type="submit">Update</button>

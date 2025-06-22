@@ -3,13 +3,14 @@ package controller.user;
 import controller.payload.UserPayload;
 import entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import service.UserService;
-import utils.UserValidator;
 
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
@@ -20,10 +21,12 @@ import java.util.NoSuchElementException;
 public class UserController {
 
     private final UserService userService;
-    private final UserValidator userValidator;
+    private final Validator userValidator;
 
     @Autowired
-    public UserController(final UserService userService, final UserValidator userValidator) {
+    public UserController(
+            final UserService userService,
+            final @Qualifier("userValidator") Validator userValidator) {
         this.userService = userService;
         this.userValidator = userValidator;
     }
@@ -49,7 +52,7 @@ public class UserController {
     @PutMapping("/edit")
     public String updateUser(
             @ModelAttribute(value = "user", binding = false) final User user,
-            @Valid @ModelAttribute("payload") final UserPayload payload,
+            @Valid @ModelAttribute("userPayload") final UserPayload payload,
             final BindingResult bindingResult,
             final Model model) {
         this.userValidator.validate(payload, bindingResult);
@@ -78,6 +81,10 @@ public class UserController {
     public String deleteUser(
             @ModelAttribute(value = "user") final User user) {
         final boolean isDeleted = this.userService.deleteUser(user.getPassportNumber());
-        return "redirect:/users/list";
+        if (isDeleted){
+            return "redirect:/users/list";
+        }else {
+            throw new RuntimeException("The server could not delete the user, try again later.");
+        }
     }
 }

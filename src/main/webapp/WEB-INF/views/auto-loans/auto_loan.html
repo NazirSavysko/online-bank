@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auto Loan</title>
+</head>
+<body>
+<h1>Auto Loan Information</h1>
+<ul>
+    <li><strong>Loan ID:</strong> <span data-th-text="${autoLoan.getId}"></span></li>
+    <li><strong>Passport Number:</strong> <span data-th-text="${autoLoan.getCreditHolderPassportNumber}"></span></li>
+    <li><strong>Credit Amount:</strong> <span data-th-text="${autoLoan.getCreditAmount}"></span></li>
+    <li><strong>Current Credit Amount:</strong> <span data-th-text="${autoLoan.getCurrentCreditAmount}"></span></li>
+    <li><strong>Credit Term (months):</strong> <span data-th-text="${autoLoan.getCreditTermInMonths}"></span></li>
+</ul>
+<br>
+<a href="/auto-loans/list">
+    <button>Go back to auto loan list</button>
+</a>
+</body>
+</html>

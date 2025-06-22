@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New User – Bank</title>
+    <title>New User</title>
 </head>
 <body>
-<h1>Create New User</h1>
+<h1>Creation of a new user</h1>
 
 <div data-th-if="${errors}">
     <h2>Validation Errors</h2>
@@ -17,17 +17,17 @@
 <form method="post" data-th-action="@{/users/create}">
     <label>
         Username:<br>
-        <input type="text" name="userName" data-th-value="${payload?.userName}">
+        <input type="text" name="userName" data-th-value="${userPayload?.userName}">
     </label><br>
 
     <label>
         Passport Number:<br>
-        <input type="text" name="passportNumber" data-th-value="${payload?.passportNumber}">
+        <input type="text" name="passportNumber" data-th-value="${userPayload?.passportNumber}">
     </label><br>
 
     <label>
         Gender:<br>
-        <select name="gender" data-th-value="${payload?.gender}">
+        <select name="gender" data-th-value="${userPayload?.gender}">
             <option value="MALE">Male</option>
             <option value="FEMALE">Female</option>
         </select>
@@ -35,7 +35,7 @@
 
     <label>
         Date of Birth:<br>
-        <input type="date" name="dateOfBirth" data-th-value="${payload?.dateOfBirth}">
+        <input type="date" name="dateOfBirth" data-th-value="${userPayload?.dateOfBirth}">
     </label><br>
 
     <button type="submit">Create</button>

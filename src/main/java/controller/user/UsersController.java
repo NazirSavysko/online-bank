@@ -2,16 +2,17 @@ package controller.user;
 
 import controller.payload.UserPayload;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.ui.Model;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import service.UserService;
-import utils.UserValidator;
 
 import javax.validation.Valid;
 
@@ -20,10 +21,13 @@ import javax.validation.Valid;
 public final class UsersController {
 
     private final UserService userService;
-    private final UserValidator userValidator;
+    private final Validator userValidator;
 
     @Autowired
-    public UsersController(UserService userService, final UserValidator userValidator) {
+    public UsersController(
+            final UserService userService,
+            final @Qualifier("userValidator") Validator userValidator
+    ) {
         this.userService = userService;
         this.userValidator = userValidator;
     }
@@ -42,7 +46,7 @@ public final class UsersController {
 
     @PostMapping("create")
     public String createUser(
-            @Valid @ModelAttribute("payload") final UserPayload payload,
+            @Valid @ModelAttribute("userPayload") final UserPayload payload,
             final BindingResult bindingResult,
             final Model model) {
         this.userValidator.validate(payload, bindingResult);

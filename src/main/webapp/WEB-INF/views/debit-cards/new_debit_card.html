@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New debit card</title>
+</head>
+<body>
+<h1>Creation of a new debit card</h1>
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+<form method="post" data-th-action="@{/debit-cards/create}">
+    <label>
+        Passport Number:<br>
+        <input type="text" name="cardHolderPassportNumber" data-th-value="${debitCardPayload?.cardHolderPassportNumber}">
+    </label><br>
+    <button type="submit">Create</button>
+</form>
+</body>
+</html>

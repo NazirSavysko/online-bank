@@ -16,6 +16,8 @@
         <th>Balance</th>
         <th>CVV</th>
         <th>Issue Date</th>
+        <th>Updating debit card</th>
+        <th>Deleting debit card</th>
     </tr>
     </thead>
     <tbody>
@@ -26,10 +28,22 @@
         <td th:text="${card.balance}"></td>
         <td th:text="${card.cvv}"></td>
         <td th:text="${card.issueDate}"></td>
+        <td>
+            <a data-th-href="@{/debit-cards/{debitCardId}/edit(debitCardId=${card.cardNumber})}">
+                <button>Update</button>
+            </a>
+        </td>
+        <td>
+            <form method="post" data-th-action="@{/debit-cards/{debitCardId}/delete(debitCardId=${card.cardNumber})}">
+                <button type="submit">Delete</button>
+                <input type="hidden" name="_method" value="delete">
+            </form>
     </tr>
     </tbody>
 </table>
 <br>
-<a th:href="/">=<button>Go back</button></a>
+<a href="/"><button>Go back</button></a>
+<br>
+<a href="/debit-cards/create"><button>Create New Debit Card</button></a>
 </body>
 </html>

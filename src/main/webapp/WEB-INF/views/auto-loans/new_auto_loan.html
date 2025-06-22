@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New auto loan</title>
+</head>
+<body>
+<h1>Creation of new auto loan</h1>
+
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+
+<form method="post" data-th-action="@{/auto-loans/create}">
+
+    <label>
+        User passport number:<br>
+        <input type="text" name="holderPassportNumber" data-th-value="${autoLoanPayload?.holderPassportNumber}">
+    </label><br>
+
+    <label>
+        Amount loan:<br>
+        <input type="number" name="amount" data-th-value="${autoLoanPayload?.amount}">
+    </label><br>
+
+    <label>
+        Term in months:<br>
+        <input type="number" name="termInMonths" data-th-value="${autoLoanPayload?.termInMonths}">
+    </label><br>
+    <button type="submit">Create</button>
+    <br>
+    <a href="/auto-loans/list">
+        <button type="button">Go back</button>
+    </a>
+</form>
+</body>
+</html>

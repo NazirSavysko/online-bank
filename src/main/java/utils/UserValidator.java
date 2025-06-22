@@ -1,13 +1,10 @@
 package utils;
 
 import controller.payload.UserPayload;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-
-
-
-import java.util.Objects;
 
 
 @Component
@@ -16,12 +13,12 @@ public final class UserValidator implements Validator {
     private static final String PASSPORT_PATTERN = "^[A-Z]{2}[0-9]{6}$";
 
     @Override
-    public boolean supports(Class<?> clazz) {
+    public boolean supports(@NotNull final Class<?> clazz) {
         return UserPayload.class.isAssignableFrom(clazz);
     }
 
     @Override
-    public void validate(Object target, Errors errors) {
+    public void validate(@NotNull final Object target, @NotNull final Errors errors) {
         UserPayload user = (UserPayload) target;
 
         if (user.passportNumber() == null || user.passportNumber().isBlank()) {
