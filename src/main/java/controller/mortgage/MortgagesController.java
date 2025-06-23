@@ -60,7 +60,7 @@ public final class MortgagesController {
                     return "redirect:/mortgages/%d".formatted(createdMortgage.getId());
             } catch (IllegalArgumentException e) {
                final ObjectError error = new ObjectError("mortgagePayload", e.getMessage());
-                model.addAttribute("error", error);
+                model.addAttribute("errors", error);
                 return "mortgages/new_mortgage";
             }
         }

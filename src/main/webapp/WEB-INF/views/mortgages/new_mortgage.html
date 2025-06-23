@@ -15,17 +15,20 @@
 <form method="post" data-th-action="@{/mortgages/create}">
     <label>
         User passport number:<br>
-        <input type="text" name="holderPassportNumber" data-th-value="${mortgagePayload?.holderPassportNumber}">
+        <input type="text" name="mortgageHolderPassportNumber" data-th-value="${mortgagePayload?.mortgageHolderPassportNumber}">
     </label><br>
 
     <label for="amount">
-        Amount loan:<br>
+        Mortgage amount:<br>
         <input type="number" min="1" name="amount" id="amount" step="0.01" data-th-value="${mortgagePayload?.amount}">
     </label><br>
-
+    <label for="currentAmount">
+        Current Amount:<br>
+        <input type="number" min="0" id="currentAmount" step="0.01" name="currentAmount" data-th-value="${mortgagePayload?.currentAmount}">
+    </label><br>
     <label>
         Term in months:<br>
-        <select name="termInMonths" data-th-value="${mortgagePayload?.termInMonths}">
+        <select name="mortgageTerm" data-th-value="${mortgagePayload?.mortgageTerm}">
             <option value="TEN_YEARS">10</option>
             <option value="FIFTEEN_YEARS">15</option>
             <option value="TWENTY_YEARS">20</option>

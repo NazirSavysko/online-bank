@@ -11,7 +11,7 @@ public final class MortgageSql {
                     m.current_mortgage_amount,
                     m.mortgage_term,
                     u.passport_number
-                FROM mortgage m
+                FROM bank.mortgage m
                 JOIN bank.bank_user u ON m.user_id = u.id
             """;
 
@@ -21,14 +21,14 @@ public final class MortgageSql {
                     m.current_mortgage_amount,
                     m.mortgage_term,
                     u.passport_number
-                FROM mortgage m
+                FROM bank.mortgage m
                 JOIN bank.bank_user u ON m.user_id = u.id
                 WHERE m.id = ?
             """;
 
     public static final String INSERT = """
-                INSERT INTO mortgage (
-                    user_id = ?,
+                INSERT INTO bank.mortgage (
+                    user_id,
                     mortgage_amount,
                     current_mortgage_amount,
                     mortgage_term
@@ -36,7 +36,7 @@ public final class MortgageSql {
             """;
 
     public static final String UPDATE = """
-                UPDATE mortgage
+                UPDATE bank.mortgage
                 SET user_id = ?,
                     mortgage_amount = ?,
                     current_mortgage_amount = ?,
@@ -45,7 +45,7 @@ public final class MortgageSql {
             """;
 
     public static final String DELETE = """
-                DELETE FROM mortgage
+                DELETE FROM bank.mortgage
                 WHERE id = ?
             """;
 }

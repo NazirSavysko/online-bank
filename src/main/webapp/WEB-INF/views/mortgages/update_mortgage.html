@@ -19,28 +19,27 @@
         Mortgage Holder Passport Number:<br>
         <input type="text"
                name="mortgageHolderPassportNumber"
-               data-th-value="${mortgagePayload != null ? mortgagePayload.mortgageHolderPassportNumber : mortgage.mortgageHolderPassportNumber}"/>}" />
+               data-th-value="${mortgagePayload != null ? mortgagePayload.mortgageHolderPassportNumber : mortgage.mortgageHolderPassportNumber}"/>
     </label><br>
     <label>
         Mortgage Amount:<br>
         <input type="number"
-               name="mortgageAmount"
+               name="amount"
                step="0.01"
                min="1"
-               data-th-value="${mortgagePayload != null ? mortgagePayload.amount() : mortgage.mortgageAmount}"/>}" />
+               data-th-value="${mortgagePayload != null ? mortgagePayload.amount() : mortgage.mortgageAmount}" />
     </label><br>
     <label>
         Current Mortgage Amount:<br>
         <input type="number"
-               name="currentMortgageAmount"
+               name="currentAmount"
                step="0.01"
                min="0"
-               data-th-value="${mortgagePayload != null ? mortgagePayload.currentAmount() : mortgage.currentMortgageAmount}"/>}"
-        />
+               data-th-value="${mortgagePayload != null ? mortgagePayload.currentAmount() : mortgage.currentMortgageAmount}"/>
     </label><br>
     <label>
         Mortgage Term:<br>
-        <select name="mortgageTermInMonths"
+        <select name="mortgageTerm"
                 data-th-value="${mortgagePayload != null ? mortgagePayload.mortgageTerm() : mortgage.mortgageTerm}">
             <option value="TEN_YEARS">10</option>
             <option value="FIFTEEN_YEARS">15</option>

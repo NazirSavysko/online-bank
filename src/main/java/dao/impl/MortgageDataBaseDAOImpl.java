@@ -84,7 +84,7 @@ public final class MortgageDataBaseDAOImpl implements MortgageDAO {
     private @NotNull Mortgage mortgageRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
         final Mortgage mortgage = new Mortgage();
         mortgage.setId(resultSet.getInt("id"));
-        mortgage.setMortgageHolderPassportNumber(resultSet.getString("mortgage_holder_passport_number"));
+        mortgage.setMortgageHolderPassportNumber(resultSet.getString("passport_number"));
         mortgage.setMortgageAmount(resultSet.getBigDecimal("mortgage_amount"));
         mortgage.setCurrentMortgageAmount(resultSet.getBigDecimal("current_mortgage_amount"));
         mortgage.setMortgageTerm(valueOf(resultSet.getString("mortgage_term")));

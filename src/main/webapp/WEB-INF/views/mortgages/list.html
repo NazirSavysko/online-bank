@@ -13,7 +13,9 @@
         <th>Passport ID</th>
         <th>Amount</th>
         <th>Current Amount</th>
-        <th>Term (months)</th>
+        <th>Term</th>
+        <th>Updating mortgage</th>
+        <th>Deleting mortgage</th>
     </tr>
     </thead>
     <tbody>
@@ -22,11 +24,21 @@
         <td th:text="${mortgage.mortgageAmount}"></td>
         <td th:text="${mortgage.currentMortgageAmount}"></td>
         <td th:text="${mortgage.mortgageTerm}"></td>
+        <td>
+            <a th:href="@{/mortgages/{mortgageId}/edit(mortgageId=${mortgage.id})}">
+                <button>Edit</button>
+            </a>
+        </td>
+        <td>
+            <form th:action="@{/mortgages/{mortgageId}/delete(mortgageId=${mortgage.id})}" method="post">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit">Delete</button>
+            </form>
     </tr>
     </tbody>
 </table>
 <br>
-<a href="/">=
+<a href="/">
     <button>Go back</button>
 </a>
 <br>

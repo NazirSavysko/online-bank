@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import service.MortgageService;
 import utils.MyOwnValidator;
@@ -65,7 +66,8 @@ public final class MortgageController {
             if (isUpdated) {
                 return "redirect:/mortgages/%d".formatted(mortgage.getId());
             } else {
-                model.addAttribute("error", "Failed to update mortgage");
+                final ObjectError error = new ObjectError("mortgagePayload", "user with this passport number does not exist");
+                model.addAttribute("errors",error);
                 return "mortgages/update_mortgage";
             }
         }
