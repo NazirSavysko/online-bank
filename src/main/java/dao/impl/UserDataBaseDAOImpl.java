@@ -4,12 +4,21 @@ import dao.UserDAO;
 import entity.User;
 import entity.enums.Gender;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+
+import static dao.sql.UserSql.*;
+import static java.sql.Date.valueOf;
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.util.Objects.requireNonNull;
 
 
 @Repository
@@ -20,72 +29,67 @@ public final class UserDataBaseDAOImpl implements UserDAO {
 
     @Override
     public List<User> getAllUsers() {
-        try {
-            final String sqlForGettingAllUsers = "SELECT * FROM bank_user";
-            return jdbcTemplate.query(sqlForGettingAllUsers, this::userRowMapper);
-        } catch (Exception e) {
-            return List.of();
-        }
+        return jdbcTemplate.query(SELECT_ALL, this::userRowMapper);
     }
 
     @Override
-    public Optional<User> getUserByPassportNumber(final String passportNumber) {
-        try {
-            final String sqlForGettingUserByPassportNumber = "SELECT * FROM bank_user WHERE passport_number = ?";
-            final List<User> users = jdbcTemplate
-                    .query(sqlForGettingUserByPassportNumber, this::userRowMapper, passportNumber);
-
-            return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+    public boolean isPassportNumberAvailable(final String passportNumber) {
+        final Integer count = jdbcTemplate.queryForObject(COUNT_BY_PASSPORT_NUMBER, Integer.class, passportNumber);
+        return count != null && count == 0;
     }
 
     @Override
-    public boolean saveUser(final User user) {
-        try {
-            final String sqlForSavingUser = "INSERT INTO bank_user (passport_number, username, birthdate, gender) VALUES (?, ?, ?, ?)";
-            final int rowsAffected = jdbcTemplate.update(sqlForSavingUser, user.getPassportNumber(), user.getUserName(),
-                    user.getDateOfBirth(), user.getGender().toString());
-            return rowsAffected > 0;
-        } catch (Exception e) {
-            return false;
-        }
+    public Optional<User> getUserById(final int id) {
+        final List<User> users = jdbcTemplate
+                .query(SELECT_BY_ID, this::userRowMapper, id);
+
+        return users.stream().findFirst();
     }
 
     @Override
-    public boolean updateUser(final String passportNumber, final User user) {
-        try {
-            final String sqlForUpdatingUser = "UPDATE bank_user SET username = ?, birthdate =?,gender = ? WHERE passport_number = ?";
-            final int rowsAffected = jdbcTemplate.update(sqlForUpdatingUser, user.getUserName(), user.getDateOfBirth(),
-                    user.getGender().toString(), passportNumber);
-            return rowsAffected > 0;
-        }catch (Exception e){
-            return false;
-        }
+    public User getUserByPassportNumber(final String passportNumber) {
+        final List<User> users = jdbcTemplate
+                .query(SELECT_BY_PASSPORT_NUMBER, this::userRowMapper, passportNumber);
+
+        return users.get(0);
     }
 
     @Override
-    public boolean deleteUser(final String passportNumber) {
-        try {
-            final String sqlForDeletingUser = "DELETE FROM bank_user WHERE passport_number = ?";
-            int rowsAffected = jdbcTemplate.update(sqlForDeletingUser, passportNumber);
-            return rowsAffected > 0;
-        }catch (Exception e){
-            return false;
-        }
+    public User saveUser(final User user) {
+        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
+            ps.setString(1, user.getPassportNumber());
+            ps.setString(2, user.getUserName());
+            ps.setDate(3, valueOf(user.getDateOfBirth()));
+            ps.setString(4, user.getGender().toString());
+            return ps;
+        }, holder);
+        user.setId((long) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
+
+        return user;
     }
 
-    private User userRowMapper(final ResultSet rs, final int rowNum) {
+    @Override
+    public boolean updateUser(final User user) {
+        final int rowsAffected = jdbcTemplate.update(UPDATE, user.getUserName(), user.getDateOfBirth(),
+                user.getGender().toString(), user.getPassportNumber(), user.getId());
+        return rowsAffected > 0;
+    }
+
+    @Override
+    public void deleteUser(final long id) {
+        jdbcTemplate.update(DELETE, id);
+    }
+
+    private @NotNull User userRowMapper(final @NotNull ResultSet rs, final int rowNum) throws SQLException {
         final User user = new User();
-        try {
-            user.setUserName(rs.getString("userName"));
-            user.setGender(Gender.valueOf(rs.getString("gender")));
-            user.setDateOfBirth(rs.getDate("birthdate").toLocalDate());
-            user.setPassportNumber(rs.getString("passport_number"));
-        } catch (Exception e) {
-            System.out.println("Error mapping user: " + e.getMessage());
-        }
+
+        user.setId(rs.getLong("id"));
+        user.setUserName(rs.getString("userName"));
+        user.setGender(Gender.valueOf(rs.getString("gender").toUpperCase().trim()));
+        user.setDateOfBirth(rs.getDate("birthdate").toLocalDate());
+        user.setPassportNumber(rs.getString("passport_number"));
 
         return user;
     }

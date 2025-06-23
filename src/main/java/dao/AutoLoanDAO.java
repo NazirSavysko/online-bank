@@ -2,16 +2,18 @@ package dao;
 
 import entity.AutoLoan;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 public interface AutoLoanDAO {
     List<AutoLoan> getAllAutoLoans();
+
     AutoLoan saveAutoLoan(AutoLoan autoLoan);
 
     Optional<AutoLoan> getAutoLoanById(int autoLoanId);
 
-    AutoLoan updateAutoLoan(Integer currentAmount,Integer termInMonth, int autoLoanId);
+    void deleteAutoLoan(int autoLoanId);
 
-    boolean deleteAutoLoan(int autoLoanId);
+    boolean updateAutoLoan(AutoLoan autoLoan);
 }

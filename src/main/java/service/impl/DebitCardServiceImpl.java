@@ -32,24 +32,30 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
-    public DebitCard saveDebitCard(final String cardHolderPassportNumber) {
+    public Optional<DebitCard> saveDebitCard(final String cardHolderPassportNumber) {
         final String cardNumber = this.createCardNumber();
         final String ccv = this.createCvv();
         final LocalDate issueDate = now();
         final LocalDate expirationDate = issueDate.plusYears(5);
         final DebitCard debitCard = new DebitCard(cardNumber, cardHolderPassportNumber,
                 expirationDate, issueDate, ccv, ZERO);
+
         return debitCardDAO.saveDebitCard(debitCard);
     }
 
     @Override
     public Optional<DebitCard> getDebitCardByCardNumber(final String cardNumber) {
-        return Optional.of(debitCardDAO.getByCardNumber(cardNumber));
+        return debitCardDAO.getByCardNumber(cardNumber);
     }
 
     @Override
     public boolean updateDebitCard(final BigDecimal balance, final String cardNumber) {
         return debitCardDAO.updateDebitCard(balance, cardNumber);
+    }
+
+    @Override
+    public boolean deleteDebitCard(final String cardNumber) {
+        return debitCardDAO.deleteDebitCard(cardNumber);
     }
 
     private String createCardNumber() {
@@ -61,7 +67,7 @@ public class DebitCardServiceImpl implements DebitCardService {
                 card.append(random.nextInt(10));
             }
             cardNumber = card.toString();
-        } while (!debitCardDAO.findByCardNumber(cardNumber));
+        } while (!debitCardDAO.isCardNumberAvailable(cardNumber));
         return cardNumber;
     }
 

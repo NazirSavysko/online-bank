@@ -7,12 +7,16 @@ import org.springframework.validation.Validator;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+
+import static java.lang.System.err;
 
 @Component
-public final class DebitCardValidator implements Validator {
+public final class MyOwnValidator implements Validator {
 
     @Override
     public boolean supports(final @NotNull Class<?> clazz) {
@@ -49,19 +53,40 @@ public final class DebitCardValidator implements Validator {
                         String strValue = value.toString();
                         String regex = ((Pattern) a).regexp();
                         String message = ((Pattern) a).message();
-                        if (!strValue.matches(regex)) {
+                        if (!strValue.matches(regex) && !strValue.isBlank()) {
                             errors.rejectValue(field.getName(), "field.invalidFormat", message);
                         }
                     }
-                } else if (a.annotationType().getSimpleName().equals("NotNull")) {
-                    Object value = field.get(target);
+                }else if (a.annotationType().getSimpleName().equals("NotNull")) {
+                    final Object value = field.get(target);
                     if (value == null) {
                         errors.rejectValue(field.getName(), "field.notNull", field.getName() + " cannot be null");
+                    }
+                }else if( a.annotationType().getSimpleName().equals("Size")) {
+                    final Object value = field.get(target);
+                    if (value instanceof final String strValue) {
+                        final int min = ((Size) a).min();
+                        final int max = ((Size) a).max();
+                       final String message = ((Size) a).message();
+                        if (strValue.length() < min || strValue.length() > max) {
+                            errors.rejectValue(field.getName(), "field.size", message);
+                        }
+                    }
+                } else if (a.annotationType().getSimpleName().equals("CurrentAmount")) {
+                    final Object value = field.get(target);
+                    if (value instanceof final BigDecimal currentAmount) {
+                        final Field amountField = target.getClass().getDeclaredField("amount");
+                        amountField.setAccessible(true);
+                        final BigDecimal amount = (BigDecimal) amountField.get(target);
+                        if (currentAmount.compareTo(amount) > 0) {
+                            errors.rejectValue(field.getName(), "field.currentAmount", "Current amount cannot be greater than the total amount");
+                        }
                     }
                 }
             }
         } catch (Exception e) {
-            errors.reject("field.accessError", "Cannot access field: " + field.getName());
+            err.println("can not access field: " + field.getName());
+            err.println("Error: " + e.getMessage());
         }
     }
 }

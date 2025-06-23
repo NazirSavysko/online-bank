@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>404 Not Found</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f2f2f2;
+            text-align: center;
+            padding: 50px;
+        }
+        .error-box {
+            display: inline-block;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .error-code {
+            font-size: 72px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .message {
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="error-box">
+    <div class="error-code">404</div>
+    <div class="message">Page Not Found</div>
+
+    <div th:if="${errors}">
+        <p th:text="${errors.defaultMessage}" style="color: #666;"></p>
+    </div>
+
+    <a href="/" style="text-decoration: none; color: #3498db;">Back to Home</a>
+</div>
+
+</body>
+</html>

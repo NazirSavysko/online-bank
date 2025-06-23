@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public interface AutoLoanService {
     List<AutoLoan> getAllAutoLoans();
-    AutoLoan saveAutoLoan(String UserPassportNumber, BigDecimal amount,BigDecimal currentAmount, int termInMonths);
+    AutoLoan saveAutoLoan(String UserPassportNumber, BigDecimal amount, BigDecimal currentAmount, int termInMonths);
     Optional<AutoLoan> getAutoLoanById(int autoLoanId);
-    AutoLoan updateAutoLoan(Integer currentAmount, Integer termInMonth, int autoLoanId);
-    boolean deleteAutoLoan(int autoLoanId);
+    boolean updateAutoLoan(String UserPassportNumber, BigDecimal amount, BigDecimal currentAmount, int termInMonths, int autoLoanId);
+    void deleteAutoLoan(int autoLoanId);
 }

@@ -17,13 +17,24 @@
 <form method="post" data-th-action="@{/auto-loans/{autoLoanId}/edit(autoLoanId=${autoLoan?.id})}">
     <input type="hidden" name="_method" value="put">
     <label>
+        User passport number:<br>
+        <input type="text" name="holderPassportNumber"
+               data-th-value="${autoLoanPayload != null ? autoLoanPayload?.holderPassportNumber : autoLoan?.creditHolderPassportNumber}">
+    </label><br>
+    <label for="amount">
+        Amount loan:<br>
+        <input type="number" min="1" id="amount" name="amount" step="0.01"
+               data-th-value="${autoLoanPayload != null ? autoLoanPayload?.amount : autoLoan?.creditAmount}">
+    </label><br>
+    <label for="currentAmount">
         Current Amount:<br>
-        <input type="number" name="currentAmount"
-               data-th-value="${autoLoanPayload != null ? autoLoanPayload?.currentAmount : autoLoan?.currentCreditAmount.intValue}">
+        <input type="number" min="0" id="currentAmount" step="0.01" name="currentAmount"
+               data-th-value="${autoLoanPayload != null ? autoLoanPayload?.currentAmount : autoLoan?.currentCreditAmount}">
     </label><br>
     <label>
         Term in months:<br>
-        <input type="number" name="termInMonths" data-th-value="${autoLoanPayload != null ? autoLoanPayload?.termInMonths : autoLoan?.creditTermInMonths}">
+        <input type="number" name="termInMonths"
+               data-th-value="${autoLoanPayload != null ? autoLoanPayload?.termInMonths : autoLoan?.creditTermInMonths}">
     </label><br>
 
     <button type="submit">Update</button>

@@ -1,6 +1,7 @@
 package controller.user;
 
-import controller.payload.UserPayload;
+import controller.payload.user.NewUserPayload;
+import entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,7 @@ public final class UsersController {
     @Autowired
     public UsersController(
             final UserService userService,
-            final @Qualifier("userValidator") Validator userValidator
+            final @Qualifier("myOwnValidator") Validator userValidator
     ) {
         this.userService = userService;
         this.userValidator = userValidator;
@@ -35,7 +36,6 @@ public final class UsersController {
     @GetMapping("list")
     public String getAllUsers(final Model model) {
         model.addAttribute("users", this.userService.getAllUsers());
-        this.userService.getAllUsers().forEach(System.out::println);
         return "users/list";
     }
 
@@ -45,25 +45,25 @@ public final class UsersController {
     }
 
     @PostMapping("create")
-    public String createUser(
-            @Valid @ModelAttribute("userPayload") final UserPayload payload,
-            final BindingResult bindingResult,
-            final Model model) {
+    public String createUser(@Valid @ModelAttribute("userPayload") final NewUserPayload payload,
+                             final BindingResult bindingResult,
+                             final Model model) {
         this.userValidator.validate(payload, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "users/new_user";
         } else {
-            final boolean isCreated = this.userService.saveUser(
-                    payload.passportNumber(),
-                    payload.userName(),
-                    payload.gender(),
-                    payload.dateOfBirth()
-            );
-            if (isCreated) {
-                return "redirect:%s".formatted(payload.passportNumber());
-            } else {
-                final ObjectError error = new ObjectError("passportNumber", "User with this passport number already exists.");
+            try {
+                final User createdUser = this.userService.saveUser(
+                        payload.passportNumber(),
+                        payload.userName(),
+                        payload.gender(),
+                        payload.dateOfBirth()
+                );
+
+                return "redirect:/users/%d".formatted(createdUser.getId());
+            } catch (final IllegalArgumentException e) {
+                ObjectError error = new ObjectError("userPayload", e.getMessage());
                 model.addAttribute("errors", error);
                 return "users/new_user";
             }

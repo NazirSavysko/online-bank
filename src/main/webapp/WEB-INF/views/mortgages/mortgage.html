@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mortgage</title>
+</head>
+<body>
+<h1>Mortgage Information</h1>
+<ul>
+    <li><strong>Mortgage ID:</strong> <span data-th-text="${mortgage.id}"></span></li>
+    <li><strong>Holder Passport Number:</strong> <span data-th-text="${mortgage.mortgageHolderPassportNumber}"></span></li>
+    <li><strong>Mortgage Amount:</strong> <span data-th-text="${mortgage.mortgageAmount}"></span></li>
+    <li><strong>Current Amount:</strong> <span data-th-text="${mortgage.currentMortgageAmount}"></span></li>
+    <li><strong>Mortgage Term:</strong> <span data-th-text="${mortgage.mortgageTerm}"></span></li>
+</ul>
+</body>
+</html>

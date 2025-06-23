@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New mortgage</title>
+</head>
+<body>
+<h1 >Create a new mortgage</h1>
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+<form method="post" data-th-action="@{/mortgages/create}">
+    <label>
+        User passport number:<br>
+        <input type="text" name="holderPassportNumber" data-th-value="${mortgagePayload?.holderPassportNumber}">
+    </label><br>
+
+    <label for="amount">
+        Amount loan:<br>
+        <input type="number" min="1" name="amount" id="amount" step="0.01" data-th-value="${mortgagePayload?.amount}">
+    </label><br>
+
+    <label>
+        Term in months:<br>
+        <select name="termInMonths" data-th-value="${mortgagePayload?.termInMonths}">
+            <option value="TEN_YEARS">10</option>
+            <option value="FIFTEEN_YEARS">15</option>
+            <option value="TWENTY_YEARS">20</option>
+        </select>
+    </label><br>
+
+    <button type="submit">Create</button>
+    <br>
+    <a href="/mortgages/list">
+        <button type="button">Go back</button>
+    </a>
+</form>
+</body>
+</html>

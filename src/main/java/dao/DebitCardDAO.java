@@ -4,16 +4,19 @@ import entity.DebitCard;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface DebitCardDAO {
     List<DebitCard> getAllDebitCards();
 
-    boolean findByCardNumber(String cardNumber);
+    boolean isCardNumberAvailable(String cardNumber);
 
-    DebitCard saveDebitCard(DebitCard debitCard);
+    Optional<DebitCard> saveDebitCard(DebitCard debitCard);
 
-    DebitCard getByCardNumber(String cardNumber);
+    Optional<DebitCard> getByCardNumber(String cardNumber);
 
     boolean updateDebitCard(BigDecimal balance, String cardNumber);
+
+    boolean deleteDebitCard(String cardNumber);
 }
 

@@ -14,32 +14,36 @@
   </ul>
 </div>
 
-<form method="post" data-th-action="@{/users/{userPassportNumber}/edit(userPassportNumber=${user.passportNumber})}">
-  <input type="hidden" name="_method" value="put">
-  <label>
-    Username:<br>
-    <input type="text" name="userName" data-th-value="${userPayload != null ? userPayload?.userName : user?.userName}">
-  </label><br>
+<form method="post" data-th-action="@{/users/{userId}/edit(userId=${user?.id})}">
+    <input type="hidden" name="_method" value="put">
+    <label>
+        Username:<br>
+        <input type="text" name="userName"
+               data-th-value="${userPayload != null ? userPayload.userName : user.userName}">
+    </label><br>
 
-  <label hidden="hidden">
-    Passport Number:<br>
-    <input type="text" name="passportNumber" data-th-value="${user?.passportNumber}">
-  </label>
+    <label >
+        Passport Number:<br>
+        <input type="text" name="passportNumber"
+               data-th-value="${userPayload != null ? userPayload.passportNumber : user.passportNumber}">
+    </label><br>
 
-  <label>
-    Gender:<br>
-    <select name="gender" data-th-value="${userPayload != null ? userPayload?.gender : user?.getGender}">
-      <option value="MALE">Male</option>
-      <option value="FEMALE">Female</option>
-    </select>
-  </label><br>
+    <label>
+        Gender:<br>
+        <select name="gender"
+                data-th-value="${userPayload != null ? userPayload.gender : user.gender}">
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+        </select>
+    </label><br>
 
-  <label>
-    Date of Birth:<br>
-    <input type="date" name="dateOfBirth" data-th-value="${userPayload != null ? userPayload?.dateOfBirth : user?.dateOfBirth}">
-  </label><br>
+    <label>
+        Date of Birth:<br>
+        <input type="date" name="dateOfBirth"
+               data-th-value="${userPayload != null ? userPayload.dateOfBirth : user.dateOfBirth}">
+    </label><br>
 
-  <button type="submit">Update</button>
+    <button type="submit">Update</button>
 </form>
 </body>
 </html>

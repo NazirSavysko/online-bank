@@ -27,26 +27,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserByPassportNumber(final String passportNumber) {
-        return userDAO.getUserByPassportNumber(passportNumber);
+    public Optional<User> getUserById(final int id) {
+        return userDAO.getUserById(id);
     }
 
     @Override
-    public boolean saveUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
-        final User user = new User(userName, gender, dataOfBirth,passportNumber);
-        return userDAO.saveUser(user);
+    public User saveUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
+        if (this.userDAO.isPassportNumberAvailable(passportNumber)) {
+            final User user = new User(0, userName, gender, dataOfBirth, passportNumber);
+            return userDAO.saveUser(user);
+        } else {
+            throw new IllegalArgumentException("User with passport number '%s' already exists".formatted(passportNumber));
+        }
     }
 
 
     @Override
-    public boolean updateUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
-        final User user = new User(userName, gender, dataOfBirth,passportNumber);
-        return userDAO.updateUser(passportNumber,user);
+    public boolean updateUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
+        if (this.userDAO.isPassportNumberAvailable(passportNumber)) {
+            final User user = new User(id, userName, gender, dataOfBirth, passportNumber);
+            return userDAO.updateUser(user);
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public boolean deleteUser(final String passportNumber) {
-        return userDAO.deleteUser(passportNumber);
+    public void deleteUser(final long id) {
+         userDAO.deleteUser(id);
     }
 
 }

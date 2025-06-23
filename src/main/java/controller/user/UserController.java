@@ -1,6 +1,6 @@
 package controller.user;
 
-import controller.payload.UserPayload;
+import controller.payload.user.UpdateUserPayload;
 import entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,26 +17,25 @@ import java.util.NoSuchElementException;
 
 
 @Controller
-@RequestMapping("/users/{userPassportNumber}")
+@RequestMapping("/users/{userId:\\d+}")
 public class UserController {
+
+    private final String USER_NOT_FOUND_MESSAGE = "User with id %d not found.";
 
     private final UserService userService;
     private final Validator userValidator;
 
     @Autowired
-    public UserController(
-            final UserService userService,
-            final @Qualifier("userValidator") Validator userValidator) {
+    public UserController(final UserService userService,
+                          final @Qualifier("myOwnValidator") Validator userValidator) {
         this.userService = userService;
         this.userValidator = userValidator;
     }
 
     @ModelAttribute("user")
-    public User user(@PathVariable("userPassportNumber") String userPassportNumber) {
-        User user = this.userService.getUserByPassportNumber(userPassportNumber)
-                .orElseThrow(() -> new NoSuchElementException("User with passport number '%s' not found".formatted(userPassportNumber)));
-        System.out.println("User found: " + user.getUserName() +  user.getPassportNumber() + user.getDateOfBirth() +  user.getGender());
-        return user;
+    public User user(@PathVariable("userId") final int id) {
+        return  this.userService.getUserById(id)
+                .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND_MESSAGE.formatted(id)));
     }
 
     @GetMapping
@@ -52,7 +51,7 @@ public class UserController {
     @PutMapping("/edit")
     public String updateUser(
             @ModelAttribute(value = "user", binding = false) final User user,
-            @Valid @ModelAttribute("userPayload") final UserPayload payload,
+            @Valid @ModelAttribute("userPayload") final UpdateUserPayload payload,
             final BindingResult bindingResult,
             final Model model) {
         this.userValidator.validate(payload, bindingResult);
@@ -61,30 +60,28 @@ public class UserController {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "users/update_user";
         } else {
-            final boolean isUpdated = this.userService.updateUser(
+           final boolean isUpdated =  this.userService.updateUser(
                     payload.passportNumber(),
                     payload.userName(),
                     payload.gender(),
-                    payload.dateOfBirth()
+                    payload.dateOfBirth(),
+                    user.getId()
             );
             if (isUpdated) {
-                return "redirect:/users/%s".formatted(payload.passportNumber());
-            } else {
-                final ObjectError error = new ObjectError("passportNumber", "the server could not update the user try again later.");
-                model.addAttribute("errors", error);
+                return "redirect:/users/%d".formatted(user.getId());
+            }else {
+                final ObjectError error = new ObjectError("user", "User with this passport number already exists.");
+                model.addAttribute("error", error);
                 return "users/update_user";
             }
+
         }
     }
 
     @DeleteMapping("/delete")
     public String deleteUser(
             @ModelAttribute(value = "user") final User user) {
-        final boolean isDeleted = this.userService.deleteUser(user.getPassportNumber());
-        if (isDeleted){
-            return "redirect:/users/list";
-        }else {
-            throw new RuntimeException("The server could not delete the user, try again later.");
-        }
+       this.userService.deleteUser(user.getId());
+        return "redirect:/users/list";
     }
 }

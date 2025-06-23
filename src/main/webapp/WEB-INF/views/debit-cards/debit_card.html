@@ -5,7 +5,7 @@
     <title>Debit card</title>
 </head>
 <body>
-<h1>Information of debit card</h1>
+<h1> Debit card information</h1>
 <ul>
     <li><strong>Card Number:</strong> <span data-th-text="${debitCard.cardNumber}"></span></li>
     <li><strong>Passport Number:</strong> <span data-th-text="${debitCard.cardHolderPassportNumber}"></span></li>
@@ -14,5 +14,9 @@
     <li><strong>CVV:</strong> <span data-th-text="${debitCard.cvv}"></span></li>
     <li><strong>Balance:</strong> <span data-th-text="${debitCard.balance}"></span></li>
 </ul>
+<br>
+<a href="/debit-cards/list">
+    <button>Go back to debit card list</button>
+</a>
 </body>
 </html>

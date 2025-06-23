@@ -1,15 +1,15 @@
 package controller.debit_card;
 
-import controller.payload.DebitCardPayload;
-import controller.payload.UpdateDebitCardPayload;
+import controller.payload.debit_card.UpdateDebitCardPayload;
 import entity.DebitCard;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import service.DebitCardService;
-import utils.DebitCardValidator;
 
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
@@ -19,11 +19,11 @@ import java.util.NoSuchElementException;
 public final class DebitCardController {
 
     private final DebitCardService debitCardService;
-    private final DebitCardValidator debitCardValidator;
+    private final Validator debitCardValidator;
 
     @Autowired
     public DebitCardController(final DebitCardService debitCardService,
-                               final DebitCardValidator debitCardValidator) {
+                               @Qualifier("myOwnValidator") final Validator debitCardValidator) {
         this.debitCardService = debitCardService;
         this.debitCardValidator = debitCardValidator;
     }
@@ -58,8 +58,24 @@ public final class DebitCardController {
         } else {
             final boolean isUpdate =  debitCardService
                     .updateDebitCard(payload.balance(),debitCard.getCardNumber());
-            return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
+            if (isUpdate) {
+                return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
+            }else {
+                return "debit-cards/update_debit_card";
+            }
         }
     }
 
+    @DeleteMapping("/delete")
+    public String deleteDebitCard(
+            @ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard,
+            final Model model) {
+          final boolean isDelete = debitCardService.deleteDebitCard(debitCard.getCardNumber());
+        if (isDelete) {
+            return "redirect:/debit-cards/list";
+        } else {
+            model.addAttribute("error", "Failed to delete debit card");
+            return "debit-cards/debit_card";
+        }
+    }
 }

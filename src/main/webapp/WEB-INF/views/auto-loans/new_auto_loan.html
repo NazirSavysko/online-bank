@@ -21,14 +21,17 @@
         <input type="text" name="holderPassportNumber" data-th-value="${autoLoanPayload?.holderPassportNumber}">
     </label><br>
 
-    <label>
+    <label for ="amount">
         Amount loan:<br>
-        <input type="number" name="amount" data-th-value="${autoLoanPayload?.amount}">
+        <input type="number"  min="1" name="amount" id ="amount" step="0.01"  data-th-value="${autoLoanPayload?.amount}">
     </label><br>
-
+    <label for="currentAmount">
+        Current Amount:<br>
+        <input type="number"  min="0" id="currentAmount" step="0.01" name="currentAmount" data-th-value="${autoLoanPayload?.currentAmount}">
+    </label><br>
     <label>
         Term in months:<br>
-        <input type="number" name="termInMonths" data-th-value="${autoLoanPayload?.termInMonths}">
+        <input type="number"  min="1" name="termInMonths" data-th-value="${autoLoanPayload?.termInMonths}">
     </label><br>
     <button type="submit">Create</button>
     <br>

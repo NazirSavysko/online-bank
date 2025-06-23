@@ -3,6 +3,7 @@ package confing;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 
@@ -18,13 +19,13 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
     }
 
     @Override
-    protected String[] getServletMappings() {
+    protected String @NotNull [] getServletMappings() {
         return new String[]{
                 "/"
         };
     }
     @Override
-    public void onStartup(ServletContext aServletContext) throws ServletException {
+    public void onStartup(@NotNull ServletContext aServletContext) throws ServletException {
         super.onStartup(aServletContext);
         registerHiddenFieldFilter(aServletContext);
     }

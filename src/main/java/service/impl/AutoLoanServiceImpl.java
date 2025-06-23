@@ -1,6 +1,7 @@
 package service.impl;
 
 import dao.AutoLoanDAO;
+import dao.UserDAO;
 import entity.AutoLoan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,10 +15,13 @@ import java.util.Optional;
 public class AutoLoanServiceImpl implements AutoLoanService {
 
     private final AutoLoanDAO autoLoanDAO;
+    private final UserDAO userDAO;
+
 
     @Autowired
-    public AutoLoanServiceImpl(AutoLoanDAO autoLoanDAO) {
+    public AutoLoanServiceImpl(final AutoLoanDAO autoLoanDAO, final UserDAO userDAO) {
         this.autoLoanDAO = autoLoanDAO;
+        this.userDAO = userDAO;
     }
 
     @Override
@@ -27,8 +31,12 @@ public class AutoLoanServiceImpl implements AutoLoanService {
 
     @Override
     public AutoLoan saveAutoLoan(final String UserPassportNumber, final BigDecimal amount, final BigDecimal currentAmount, final int termInMonths) {
-        final AutoLoan autoLoan = new AutoLoan(0,amount, currentAmount, termInMonths, UserPassportNumber);
-        return this.autoLoanDAO.saveAutoLoan(autoLoan);
+        if (!this.userDAO.isPassportNumberAvailable(UserPassportNumber)) {
+            final AutoLoan autoLoan = new AutoLoan(0, amount, currentAmount, termInMonths, UserPassportNumber);
+            return this.autoLoanDAO.saveAutoLoan(autoLoan);
+        } else {
+            throw new IllegalArgumentException("User with passport number '%s' does not exist".formatted(UserPassportNumber));
+        }
     }
 
     @Override
@@ -37,12 +45,17 @@ public class AutoLoanServiceImpl implements AutoLoanService {
     }
 
     @Override
-    public AutoLoan updateAutoLoan(final Integer currentAmount, final Integer termInMonth, final int autoLoanId) {
-        return this.autoLoanDAO.updateAutoLoan(currentAmount,termInMonth, autoLoanId);
+    public boolean updateAutoLoan(final String UserPassportNumber, final BigDecimal amount, final BigDecimal currentAmount, final int termInMonths, final int autoLoanId) {
+        if (!this.userDAO.isPassportNumberAvailable(UserPassportNumber)) {
+            final AutoLoan autoLoan = new AutoLoan(autoLoanId, amount, currentAmount, termInMonths, UserPassportNumber);
+            return this.autoLoanDAO.updateAutoLoan(autoLoan);
+        }else {
+            return false;
+        }
     }
 
     @Override
-    public boolean deleteAutoLoan(final int autoLoanId) {
-        return  this.autoLoanDAO.deleteAutoLoan(autoLoanId);
+    public void deleteAutoLoan(final int autoLoanId) {
+         this.autoLoanDAO.deleteAutoLoan(autoLoanId);
     }
 }

@@ -1,7 +1,10 @@
 package dao.impl;
 
 import dao.AutoLoanDAO;
+import dao.UserDAO;
 import entity.AutoLoan;
+import entity.User;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -9,9 +12,11 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import static dao.sql.AutoLoanSql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.util.Objects.requireNonNull;
 
@@ -19,84 +24,71 @@ import static java.util.Objects.requireNonNull;
 public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserDAO userDAO;
 
     @Autowired
-    public AutoLoanDataBaseDAOImpl(final JdbcTemplate jdbcTemplate) {
+    public AutoLoanDataBaseDAOImpl(final JdbcTemplate jdbcTemplate, final UserDAO userDAO) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userDAO = userDAO;
     }
 
     @Override
     public List<AutoLoan> getAllAutoLoans() {
-        try {
-            final String sqlForGettingAllAutoLoans = "SELECT * FROM auto_loan";
-            return jdbcTemplate.query(sqlForGettingAllAutoLoans, this::autoLoanRowMapper);
-        } catch (Exception e) {
-            return List.of();
-        }
+        return jdbcTemplate.query(SELECT_ALL, this::autoLoanRowMapper);
     }
 
     @Override
     public AutoLoan saveAutoLoan(final AutoLoan autoLoan) {
-        try {
-            final String sqlForSavingAutoLoan = "INSERT INTO auto_loan (loan_holder_passport_number, loan_amount, current_loan_amount, loan_term) VALUES (?, ?, ?, ?)";
-            GeneratedKeyHolder holder = new GeneratedKeyHolder();
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement(sqlForSavingAutoLoan, RETURN_GENERATED_KEYS);
-                ps.setString(1, autoLoan.getCreditHolderPassportNumber());
-                ps.setBigDecimal(2, autoLoan.getCreditAmount());
-                ps.setBigDecimal(3, autoLoan.getCurrentCreditAmount());
-                ps.setInt(4, autoLoan.getCreditTermInMonths());
-                return ps;
-            }, holder);
-            autoLoan.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
-            ;
-            return autoLoan;
-        } catch (Exception e) {
-            return null;
-        }
+        final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
+        GeneratedKeyHolder holder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
+            ps.setLong(1, user.getId());
+            ps.setBigDecimal(2, autoLoan.getCreditAmount());
+            ps.setBigDecimal(3, autoLoan.getCurrentCreditAmount());
+            ps.setInt(4, autoLoan.getCreditTermInMonths());
+            return ps;
+        }, holder);
+        autoLoan.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
+
+        return autoLoan;
+
     }
 
     @Override
     public Optional<AutoLoan> getAutoLoanById(final int autoLoanId) {
-        try {
-            final String sqlForGettingAutoLoanById = "SELECT * FROM auto_loan WHERE id = ?";
-            final List<AutoLoan> autoLoans = jdbcTemplate.query(sqlForGettingAutoLoanById, this::autoLoanRowMapper, autoLoanId);
+        final List<AutoLoan> autoLoans = jdbcTemplate.query(SELECT_BY_ID, this::autoLoanRowMapper, autoLoanId);
 
-            return Optional.ofNullable(autoLoans.isEmpty() ? null : autoLoans.get(0));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+        return autoLoans.stream().findFirst();
     }
 
     @Override
-    public AutoLoan updateAutoLoan(final Integer currentAmount, final Integer termInMonth, final int autoLoanId) {
-        return jdbcTemplate.queryForObject(
-                "UPDATE auto_loan SET  current_loan_amount = ?, loan_term = ? WHERE id = ? RETURNING *",
-                this::autoLoanRowMapper, currentAmount, termInMonth, autoLoanId
-        );
+    public boolean updateAutoLoan(final AutoLoan autoLoan) {
+        final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
+
+
+        int rowsAffected = jdbcTemplate.update(UPDATE,
+                user.getId(),
+                autoLoan.getCreditAmount(),
+                autoLoan.getCurrentCreditAmount(),
+                autoLoan.getCreditTermInMonths(),
+                autoLoan.getId());
+        return rowsAffected > 0;
     }
 
     @Override
-    public boolean deleteAutoLoan(final int autoLoanId) {
-        final String sqlForDeletingAutoLoan = "DELETE FROM auto_loan WHERE id = ?";
-        try {
-            return jdbcTemplate.update(sqlForDeletingAutoLoan, autoLoanId) > 0;
-        } catch (Exception e) {
-            return false;
-        }
+    public void deleteAutoLoan(final int autoLoanId) {
+        jdbcTemplate.update(DELETE, autoLoanId);
     }
 
-    private AutoLoan autoLoanRowMapper(final ResultSet resultSet, final int i) {
+    private @NotNull AutoLoan autoLoanRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
         final AutoLoan autoLoan = new AutoLoan();
-        try {
-            autoLoan.setId(resultSet.getInt("id"));
-            autoLoan.setCreditHolderPassportNumber(resultSet.getString("loan_holder_passport_number"));
-            autoLoan.setCreditAmount(resultSet.getBigDecimal("loan_amount"));
-            autoLoan.setCurrentCreditAmount(resultSet.getBigDecimal("current_loan_amount"));
-            autoLoan.setCreditTermInMonths(resultSet.getInt("loan_term"));
-        } catch (Exception e) {
-            return null;
-        }
+        autoLoan.setId(resultSet.getInt("id"));
+        autoLoan.setCreditHolderPassportNumber(resultSet.getString("passport_number"));
+        autoLoan.setCreditAmount(resultSet.getBigDecimal("loan_amount"));
+        autoLoan.setCurrentCreditAmount(resultSet.getBigDecimal("current_loan_amount"));
+        autoLoan.setCreditTermInMonths(resultSet.getInt("loan_term"));
+
         return autoLoan;
     }
 }
