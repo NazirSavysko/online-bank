@@ -4,8 +4,8 @@ package confing;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
     @Override
@@ -30,7 +30,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         registerHiddenFieldFilter(aServletContext);
     }
 
-    private void registerHiddenFieldFilter(ServletContext aContext) {
+    private void registerHiddenFieldFilter(@NotNull ServletContext aContext) {
         aContext.addFilter("hiddenHttpMethodFilter",
                 new HiddenHttpMethodFilter()).addMappingForUrlPatterns(null ,true, "/*");
     }

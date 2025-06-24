@@ -14,7 +14,7 @@ public interface DebitCardService {
 
     Optional<DebitCard> getDebitCardById(int id);
 
-    void updateDebitCard(int id, String holderPassportNumber, String cardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
+    void updateDebitCard(int id, String holderPassportNumber, String cardNumber,String pastCardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
 
     void deleteDebitCard(int id);
 }

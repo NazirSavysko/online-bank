@@ -5,8 +5,8 @@ import entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +36,7 @@ public final class UsersController {
     @GetMapping("list")
     public String getAllUsers(final Model model) {
         model.addAttribute("users", this.userService.getAllUsers());
+
         return "users/list";
     }
 
@@ -65,6 +66,7 @@ public final class UsersController {
             } catch (final IllegalArgumentException e) {
                 ObjectError error = new ObjectError("userPayload", e.getMessage());
                 model.addAttribute("errors", error);
+
                 return "users/new_user";
             }
         }

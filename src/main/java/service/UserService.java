@@ -9,8 +9,12 @@ import java.util.Optional;
 
 public interface UserService {
     List<User> getAllUsers();
+
     Optional<User> getUserById(final int id);
+
+    boolean updateUser(String passportNumber,String pastPassportNumber, String userName, Gender gender, LocalDate dataOfBirth, long id);
+
     User saveUser(String passportNumber, String userName, Gender gender, LocalDate dataOfBirth);
-    boolean updateUser(String passportNumber, String userName, Gender gender, LocalDate dataOfBirth, long id);
+
     void deleteUser(long id);
 }

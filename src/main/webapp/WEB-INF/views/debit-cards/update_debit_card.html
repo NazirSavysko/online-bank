@@ -12,8 +12,38 @@
         <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
     </ul>
 </div>
-<form method="post" data-th-action="@{/debit-cards/{debitCardId}/edit(debitCardId=${debitCard?.getCardNumber()})}">
+<form method="post" data-th-action="@{/debit-cards/{debitCardId}/edit(debitCardId=${debitCard?.getId})}">
     <input type="hidden" name="_method" value="put">
+    <label>
+        Passport Number:<br>
+        <input type="text"
+               name="cardHolderPassportNumber"
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cardHolderPassportNumber : debitCard.cardHolderPassportNumber}" />
+    </label><br>
+    <label>
+        Card Number:<br>
+        <input type="text"
+               name="cardNumber"
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cardNumber : debitCard.cardNumber}" />
+    </label><br>
+    <label>
+        Expiration Date:<br>
+        <input type="date"
+               name="expirationDate"
+               data-th-value="${debitCardPayload != null ? debitCardPayload.expirationDate : debitCard.expirationDate}" />
+    </label><br>
+    <label>
+        CVV:<br>
+        <input type="text"
+               name="cvv"
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cvv : debitCard.cvv}" />
+    </label><br>
+    <label>
+        Issue Date:<br>
+        <input type="date"
+               name="issueDate"
+               data-th-value="${debitCardPayload != null ? debitCardPayload.issueDate : debitCard.issueDate}" />
+    </label><br>
 
     <label for="balance">
         Balance:<br>

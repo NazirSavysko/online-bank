@@ -55,12 +55,14 @@ public final class DebitCardController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "debit-cards/update_debit_card";
         } else {
             try {
                 debitCardService.updateDebitCard(
                         debitCard.getId(),
                         payload.cardHolderPassportNumber(),
+                        debitCard.getCardNumber(),
                         payload.cardNumber(),
                         payload.cvv(),
                         payload.balance(),
@@ -68,10 +70,11 @@ public final class DebitCardController {
                         payload.issueDate()
                 );
 
-                return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
+                return "redirect:/debit-cards/%d".formatted(debitCard.getId());
             } catch (IllegalArgumentException e) {
                 ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
                 model.addAttribute("errors", error);
+
                 return "debit-cards/update_debit_card";
             }
         }
@@ -80,6 +83,7 @@ public final class DebitCardController {
     @DeleteMapping("/delete")
     public String deleteDebitCard(@ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard) {
         debitCardService.deleteDebitCard(debitCard.getId());
+
         return "redirect:/debit-cards/list";
     }
 }

@@ -14,8 +14,8 @@ public final class DebitCardSql {
                        d.cvv,
                        d.balance,
                        u.passport_number
-                FROM debit_card d
-                JOIN bank_user u ON d.user_id = u.id
+                FROM bank.debit_card d
+                JOIN bank.bank_user u ON d.user_id = u.id
             """;
 
     public static final String CHECK_CARD_NUMBER = """
@@ -56,8 +56,8 @@ public final class DebitCardSql {
                        d.cvv,
                        d.balance,
                        u.passport_number
-                FROM debit_card d
-                JOIN bank_user u ON d.user_id = u.id
+                FROM bank.debit_card d
+                JOIN bank.bank_user u ON d.user_id = u.id
                 WHERE d.id = ?
     """;
 }

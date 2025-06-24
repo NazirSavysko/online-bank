@@ -29,12 +29,12 @@
         <td th:text="${card.cvv}"></td>
         <td th:text="${card.issueDate}"></td>
         <td>
-            <a data-th-href="@{/debit-cards/{debitCardId}/edit(debitCardId=${card.cardNumber})}">
+            <a data-th-href="@{/debit-cards/{debitCardId}/edit(debitCardId=${card.id})}">
                 <button>Update</button>
             </a>
         </td>
         <td>
-            <form method="post" data-th-action="@{/debit-cards/{debitCardId}/delete(debitCardId=${card.cardNumber})}">
+            <form method="post" data-th-action="@{/debit-cards/{debitCardId}/delete(debitCardId=${card.id})}">
                 <button type="submit">Delete</button>
                 <input type="hidden" name="_method" value="delete">
             </form>

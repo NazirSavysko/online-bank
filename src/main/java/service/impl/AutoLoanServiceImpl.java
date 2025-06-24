@@ -30,12 +30,16 @@ public class AutoLoanServiceImpl implements AutoLoanService {
     }
 
     @Override
-    public AutoLoan saveAutoLoan(final String UserPassportNumber, final BigDecimal amount, final BigDecimal currentAmount, final int termInMonths) {
-        if (!this.userDAO.isPassportNumberAvailable(UserPassportNumber)) {
-            final AutoLoan autoLoan = new AutoLoan(0, amount, currentAmount, termInMonths, UserPassportNumber);
+    public AutoLoan saveAutoLoan(final String userPassportNumber,
+                                 final BigDecimal amount,
+                                 final BigDecimal currentAmount,
+                                 final int termInMonths) {
+        if (!this.userDAO.isPassportNumberAvailable(userPassportNumber)) {
+            final AutoLoan autoLoan = new AutoLoan(0, amount, currentAmount, termInMonths, userPassportNumber);
+
             return this.autoLoanDAO.saveAutoLoan(autoLoan);
         } else {
-            throw new IllegalArgumentException("User with passport number '%s' does not exist".formatted(UserPassportNumber));
+            throw new IllegalArgumentException("User with passport number '%s' does not exist".formatted(userPassportNumber));
         }
     }
 
@@ -45,17 +49,21 @@ public class AutoLoanServiceImpl implements AutoLoanService {
     }
 
     @Override
-    public boolean updateAutoLoan(final String UserPassportNumber, final BigDecimal amount, final BigDecimal currentAmount, final int termInMonths, final int autoLoanId) {
-        if (!this.userDAO.isPassportNumberAvailable(UserPassportNumber)) {
-            final AutoLoan autoLoan = new AutoLoan(autoLoanId, amount, currentAmount, termInMonths, UserPassportNumber);
+    public boolean updateAutoLoan(final String userPassportNumber,
+                                  final BigDecimal amount,
+                                  final BigDecimal currentAmount,
+                                  final int termInMonths,
+                                  final int autoLoanId) {
+        if (!this.userDAO.isPassportNumberAvailable(userPassportNumber)) {
+            final AutoLoan autoLoan = new AutoLoan(autoLoanId, amount, currentAmount, termInMonths, userPassportNumber);
             return this.autoLoanDAO.updateAutoLoan(autoLoan);
-        }else {
+        } else {
             return false;
         }
     }
 
     @Override
     public void deleteAutoLoan(final int autoLoanId) {
-         this.autoLoanDAO.deleteAutoLoan(autoLoanId);
+        this.autoLoanDAO.deleteAutoLoan(autoLoanId);
     }
 }

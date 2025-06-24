@@ -34,6 +34,7 @@ public final class DebitCardsController {
     @GetMapping("list")
     public String getDebitCardsPage(final Model model) {
         model.addAttribute("debitCards", this.debitCardService.getAllDebitCards());
+
         return "debit-cards/list";
     }
 
@@ -61,10 +62,11 @@ public final class DebitCardsController {
                         payload.issueDate()
                 );
 
-                return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
+                return "redirect:/debit-cards/%d".formatted(debitCard.getId());
             } catch (final IllegalArgumentException e) {
                 ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
                 model.addAttribute("errors", error);
+
                 return "debit-cards/new_debit_card";
             }
         }

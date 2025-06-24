@@ -30,11 +30,16 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
-    public DebitCard saveDebitCard(final String holderPassportNumber, final String cardNumber, final String cvv, final BigDecimal balance, final LocalDate expirationDate, final LocalDate issueDate) {
-        if (this.debitCardDAO.isCardNumberAvailable(cardNumber)) {
+    public DebitCard saveDebitCard(final String holderPassportNumber,
+                                   final String cardNumber,
+                                   final String cvv,
+                                   final BigDecimal balance,
+                                   final LocalDate expirationDate,
+                                   final LocalDate issueDate) {
+        if (!this.debitCardDAO.isCardNumberAvailable(cardNumber)) {
             throw new IllegalArgumentException("Card number " + cardNumber + " is already in use.");
         }
-        if (!this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
+        if (this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
             throw new IllegalArgumentException("User with passport number " + holderPassportNumber + " does not exist.");
         }
 
@@ -49,10 +54,11 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
-    public void updateDebitCard(final int id, final String holderPassportNumber, final String cardNumber, final String cvv, final BigDecimal balance, final LocalDate expirationDate, final LocalDate issueDate) {
-        if (!this.debitCardDAO.isCardNumberAvailable(cardNumber)) {
+    public void updateDebitCard(final int id, final String holderPassportNumber, final String cardNumber,final String pastCardNumber, final String cvv, final BigDecimal balance, final LocalDate expirationDate, final LocalDate issueDate) {
+        if (!(cardNumber.equals(pastCardNumber) || this.debitCardDAO.isCardNumberAvailable(cardNumber))) {
             throw new IllegalArgumentException("Card number " + cardNumber + " is already in use.");
-        } else if (!this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
+        }
+        if (this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
             throw new IllegalArgumentException("User with passport number " + holderPassportNumber + " does not exist.");
         } else {
             final DebitCard debitCard = new DebitCard(id, cardNumber, holderPassportNumber, expirationDate, issueDate, cvv, balance);

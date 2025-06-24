@@ -8,7 +8,10 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.Validator;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import service.MortgageService;
 
 import javax.validation.Valid;
@@ -30,6 +33,7 @@ public final class MortgagesController {
     @GetMapping("list")
     public String getAllMortgages(final Model model) {
         model.addAttribute("mortgages", this.mortgageService.getAllMortgages());
+
         return "mortgages/list";
     }
 
@@ -47,6 +51,7 @@ public final class MortgagesController {
         this.mortgageValidator.validate(payload, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "mortgages/new_mortgage";
         } else {
             try {
@@ -57,10 +62,11 @@ public final class MortgagesController {
                         payload.currentAmount()
                 );
 
-                    return "redirect:/mortgages/%d".formatted(createdMortgage.getId());
+                return "redirect:/mortgages/%d".formatted(createdMortgage.getId());
             } catch (IllegalArgumentException e) {
-               final ObjectError error = new ObjectError("mortgagePayload", e.getMessage());
+                final ObjectError error = new ObjectError("mortgagePayload", e.getMessage());
                 model.addAttribute("errors", error);
+
                 return "mortgages/new_mortgage";
             }
         }

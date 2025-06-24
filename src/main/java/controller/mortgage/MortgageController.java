@@ -54,6 +54,7 @@ public final class MortgageController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "mortgages/update_mortgage";
         } else {
             boolean isUpdated = this.mortgageService.updateMortgage(
@@ -68,6 +69,7 @@ public final class MortgageController {
             } else {
                 final ObjectError error = new ObjectError("mortgagePayload", "user with this passport number does not exist");
                 model.addAttribute("errors",error);
+
                 return "mortgages/update_mortgage";
             }
         }

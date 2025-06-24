@@ -4,13 +4,13 @@ import dao.MortgageDAO;
 import dao.UserDAO;
 import entity.Mortgage;
 import entity.User;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,44 +35,48 @@ public final class MortgageDataBaseDAOImpl implements MortgageDAO {
     }
 
     @Override
-    public List<Mortgage> getAllMortgages() {
+    public @NotNull List<Mortgage> getAllMortgages() {
         return jdbcTemplate.query(SELECT_ALL, this::mortgageRowMapper);
     }
 
+    @Contract("_ -> param1")
     @Override
-    public Mortgage saveMortgage(final Mortgage mortgage) {
+    public @NotNull Mortgage saveMortgage(final @NotNull Mortgage mortgage) {
         final User user = this.userDAO.getUserByPassportNumber(mortgage.getMortgageHolderPassportNumber());
         final GeneratedKeyHolder holder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
-            ps.setLong(1,user.getId());
+            ps.setLong(1, user.getId());
             ps.setBigDecimal(2, mortgage.getMortgageAmount());
             ps.setBigDecimal(3, mortgage.getCurrentMortgageAmount());
             ps.setString(4, mortgage.getMortgageTerm().toString());
             return ps;
         }, holder);
+
         mortgage.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
         return mortgage;
     }
 
     @Override
-    public Optional<Mortgage> getMortgageById(final int mortgageId) {
+    public @NotNull Optional<Mortgage> getMortgageById(final int mortgageId) {
         final List<Mortgage> mortgages = jdbcTemplate.query(SELECT_BY_ID, this::mortgageRowMapper, mortgageId);
 
         return mortgages.stream().findFirst();
     }
 
     @Override
-    public boolean updateMortgage(final Mortgage mortgage) {
+    public boolean updateMortgage(final @NotNull Mortgage mortgage) {
         final User user = this.userDAO.getUserByPassportNumber(mortgage.getMortgageHolderPassportNumber());
-        int rowsAffected = jdbcTemplate.update(UPDATE,
+
+        final int rowsAffected = jdbcTemplate.update(UPDATE,
                 user.getId(),
                 mortgage.getMortgageAmount(),
                 mortgage.getCurrentMortgageAmount(),
                 mortgage.getMortgageTerm().toString(),
                 mortgage.getId()
         );
+
         return rowsAffected > 0;
     }
 
@@ -83,6 +87,7 @@ public final class MortgageDataBaseDAOImpl implements MortgageDAO {
 
     private @NotNull Mortgage mortgageRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
         final Mortgage mortgage = new Mortgage();
+
         mortgage.setId(resultSet.getInt("id"));
         mortgage.setMortgageHolderPassportNumber(resultSet.getString("passport_number"));
         mortgage.setMortgageAmount(resultSet.getBigDecimal("mortgage_amount"));

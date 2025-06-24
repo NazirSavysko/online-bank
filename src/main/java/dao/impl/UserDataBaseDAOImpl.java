@@ -3,8 +3,9 @@ package dao.impl;
 import dao.UserDAO;
 import entity.User;
 import entity.enums.Gender;
-import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -22,13 +23,17 @@ import static java.util.Objects.requireNonNull;
 
 
 @Repository
-@AllArgsConstructor
 public final class UserDataBaseDAOImpl implements UserDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    public UserDataBaseDAOImpl(final JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
     @Override
-    public List<User> getAllUsers() {
+    public @NotNull List<User> getAllUsers() {
         return jdbcTemplate.query(SELECT_ALL, this::userRowMapper);
     }
 
@@ -39,7 +44,7 @@ public final class UserDataBaseDAOImpl implements UserDAO {
     }
 
     @Override
-    public Optional<User> getUserById(final int id) {
+    public @NotNull Optional<User> getUserById(final int id) {
         final List<User> users = jdbcTemplate
                 .query(SELECT_BY_ID, this::userRowMapper, id);
 
@@ -54,8 +59,9 @@ public final class UserDataBaseDAOImpl implements UserDAO {
         return users.get(0);
     }
 
+    @Contract("_ -> param1")
     @Override
-    public User saveUser(final User user) {
+    public @NotNull User saveUser(final @NotNull User user) {
         final GeneratedKeyHolder holder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
@@ -71,9 +77,10 @@ public final class UserDataBaseDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean updateUser(final User user) {
+    public boolean updateUser(final @NotNull User user) {
         final int rowsAffected = jdbcTemplate.update(UPDATE, user.getUserName(), user.getDateOfBirth(),
                 user.getGender().toString(), user.getPassportNumber(), user.getId());
+
         return rowsAffected > 0;
     }
 

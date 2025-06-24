@@ -4,6 +4,7 @@ import dao.AutoLoanDAO;
 import dao.UserDAO;
 import entity.AutoLoan;
 import entity.User;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,16 +34,18 @@ public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
     }
 
     @Override
-    public List<AutoLoan> getAllAutoLoans() {
+    public @NotNull List<AutoLoan> getAllAutoLoans() {
         return jdbcTemplate.query(SELECT_ALL, this::autoLoanRowMapper);
     }
 
+    @Contract("_ -> param1")
     @Override
-    public AutoLoan saveAutoLoan(final AutoLoan autoLoan) {
+    public @NotNull AutoLoan saveAutoLoan(final @NotNull AutoLoan autoLoan) {
         final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
-        GeneratedKeyHolder holder = new GeneratedKeyHolder();
+        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
+            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
             ps.setLong(1, user.getId());
             ps.setBigDecimal(2, autoLoan.getCreditAmount());
             ps.setBigDecimal(3, autoLoan.getCurrentCreditAmount());
@@ -56,14 +59,14 @@ public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
     }
 
     @Override
-    public Optional<AutoLoan> getAutoLoanById(final int autoLoanId) {
+    public @NotNull Optional<AutoLoan> getAutoLoanById(final int autoLoanId) {
         final List<AutoLoan> autoLoans = jdbcTemplate.query(SELECT_BY_ID, this::autoLoanRowMapper, autoLoanId);
 
         return autoLoans.stream().findFirst();
     }
 
     @Override
-    public boolean updateAutoLoan(final AutoLoan autoLoan) {
+    public boolean updateAutoLoan(final @NotNull AutoLoan autoLoan) {
         final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
 
 
@@ -83,6 +86,7 @@ public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
 
     private @NotNull AutoLoan autoLoanRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
         final AutoLoan autoLoan = new AutoLoan();
+
         autoLoan.setId(resultSet.getInt("id"));
         autoLoan.setCreditHolderPassportNumber(resultSet.getString("passport_number"));
         autoLoan.setCreditAmount(resultSet.getBigDecimal("loan_amount"));

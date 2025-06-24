@@ -27,7 +27,7 @@ public final class AutoLoanController {
     @Autowired
     public AutoLoanController(
             final AutoLoanService autoLoanService,
-            @Qualifier("myOwnValidator") final  Validator autoLoanValidator
+            @Qualifier("myOwnValidator") final Validator autoLoanValidator
     ) {
         this.autoLoanService = autoLoanService;
         this.autoLoanValidator = autoLoanValidator;
@@ -68,19 +68,22 @@ public final class AutoLoanController {
                     payload.termInMonths(),
                     autoLoan.getId()
             );
+
             if (updatedAutoLoan) {
                 return "redirect:/auto-loans/%d".formatted(autoLoan.getId());
-            }
-            else {
+            } else {
                 final ObjectError error = new ObjectError("autoLoan", " holder with this passport number does not exist ");
                 model.addAttribute("errors", error);
+
                 return "auto-loans/update_auto_loan";
             }
         }
     }
+
     @DeleteMapping("/delete")
     public String deleteAutoLoan(@ModelAttribute(value = "autoLoan", binding = false) final AutoLoan autoLoan) {
-         this.autoLoanService.deleteAutoLoan(autoLoan.getId());
-            return "redirect:/auto-loans/list";
+        this.autoLoanService.deleteAutoLoan(autoLoan.getId());
+
+        return "redirect:/auto-loans/list";
     }
 }

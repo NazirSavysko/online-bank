@@ -43,8 +43,8 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean updateUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
-        if (this.userDAO.isPassportNumberAvailable(passportNumber)) {
+    public boolean updateUser(final String passportNumber, final String pastPassportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
+        if (passportNumber.equals(pastPassportNumber) || this.userDAO.isPassportNumberAvailable(passportNumber)) {
             final User user = new User(id, userName, gender, dataOfBirth, passportNumber);
             return userDAO.updateUser(user);
         } else {
