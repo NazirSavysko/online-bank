@@ -1,4 +1,4 @@
-package confing;
+package config;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
