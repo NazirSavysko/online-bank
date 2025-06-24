@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public final class DebitCard {
+    private int id;
     private String cardNumber;
     private String cardHolderPassportNumber;
     private LocalDate expirationDate;

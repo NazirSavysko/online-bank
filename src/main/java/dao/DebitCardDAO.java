@@ -2,7 +2,6 @@ package dao;
 
 import entity.DebitCard;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,12 +10,12 @@ public interface DebitCardDAO {
 
     boolean isCardNumberAvailable(String cardNumber);
 
-    Optional<DebitCard> saveDebitCard(DebitCard debitCard);
+    DebitCard saveDebitCard(DebitCard debitCard);
 
-    Optional<DebitCard> getByCardNumber(String cardNumber);
+    void updateDebitCard(DebitCard debitCard);
 
-    boolean updateDebitCard(BigDecimal balance, String cardNumber);
+    void deleteDebitCard(int id);
 
-    boolean deleteDebitCard(String cardNumber);
+    Optional<DebitCard> getDebitCardById(int id);
 }
 

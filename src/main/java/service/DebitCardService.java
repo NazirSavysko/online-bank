@@ -3,17 +3,18 @@ package service;
 import entity.DebitCard;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface DebitCardService {
     List<DebitCard> getAllDebitCards();
 
-    Optional<DebitCard> saveDebitCard(String cardHolderPassportNumber);
+    DebitCard saveDebitCard( String holderPassportNumber, String cardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
 
-    Optional<DebitCard> getDebitCardByCardNumber(String cardNumber);
+    Optional<DebitCard> getDebitCardById(int id);
 
-    boolean updateDebitCard(BigDecimal balance, String cardNumber);
+    void updateDebitCard(int id, String holderPassportNumber, String cardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
 
-    boolean deleteDebitCard(String cardNumber);
+    void deleteDebitCard(int id);
 }

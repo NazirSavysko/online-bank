@@ -14,10 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import service.DebitCardService;
-import utils.MyOwnValidator;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/debit-cards")
@@ -45,24 +43,28 @@ public final class DebitCardsController {
     }
 
     @PostMapping("create")
-    public String createDebitCard(
-            @Valid @ModelAttribute("debitCardPayload") final NewDebitCardPayload payload,
-            final BindingResult bindingResult,
-            final Model model
-    ) {
+    public String createDebitCard(@Valid @ModelAttribute("debitCardPayload") final NewDebitCardPayload payload,
+                                  final BindingResult bindingResult,
+                                  final Model model) {
         this.debitCardValidator.validate(payload, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "debit-cards/new_debit_card";
         } else {
-            final Optional<DebitCard> debitCard = this.debitCardService.saveDebitCard(
-                    payload.cardHolderPassportNumber()
-            );
-            if (debitCard.isPresent()) {
-                return "redirect:/debit-cards/%s".formatted(debitCard.get().getCardNumber());
-            } else {
-                ObjectError error = new ObjectError("debitCardPayload", "Invalid number of holder's passport");
-                model.addAttribute("errors",error);
+            try {
+                final DebitCard debitCard = this.debitCardService.saveDebitCard(
+                        payload.cardHolderPassportNumber(),
+                        payload.cardNumber(),
+                        payload.cvv(),
+                        payload.balance(),
+                        payload.expirationDate(),
+                        payload.issueDate()
+                );
+
+                return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
+            } catch (final IllegalArgumentException e) {
+                ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
+                model.addAttribute("errors", error);
                 return "debit-cards/new_debit_card";
             }
         }

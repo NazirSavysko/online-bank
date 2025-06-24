@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.annotation.*;
 import service.DebitCardService;
@@ -15,7 +16,7 @@ import javax.validation.Valid;
 import java.util.NoSuchElementException;
 
 @Controller
-@RequestMapping("/debit-cards/{cardNumber}")
+@RequestMapping("/debit-cards/{cardId:\\d+}")
 public final class DebitCardController {
 
     private final DebitCardService debitCardService;
@@ -29,9 +30,9 @@ public final class DebitCardController {
     }
 
     @ModelAttribute("debitCard")
-    public DebitCard getDebitCard(@PathVariable("cardNumber") String cardNumber) {
-        return debitCardService.getDebitCardByCardNumber(cardNumber)
-                .orElseThrow(() -> new NoSuchElementException("Debit card with number '%s' not found".formatted(cardNumber)));
+    public DebitCard getDebitCard(@PathVariable("cardId") int id) {
+        return debitCardService.getDebitCardById(id)
+                .orElseThrow(() -> new NoSuchElementException("Debit card with number '%d' not found".formatted(id)));
     }
 
     @GetMapping
@@ -56,26 +57,29 @@ public final class DebitCardController {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "debit-cards/update_debit_card";
         } else {
-            final boolean isUpdate =  debitCardService
-                    .updateDebitCard(payload.balance(),debitCard.getCardNumber());
-            if (isUpdate) {
+            try {
+                debitCardService.updateDebitCard(
+                        debitCard.getId(),
+                        payload.cardHolderPassportNumber(),
+                        payload.cardNumber(),
+                        payload.cvv(),
+                        payload.balance(),
+                        payload.expirationDate(),
+                        payload.issueDate()
+                );
+
                 return "redirect:/debit-cards/%s".formatted(debitCard.getCardNumber());
-            }else {
+            } catch (IllegalArgumentException e) {
+                ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
+                model.addAttribute("errors", error);
                 return "debit-cards/update_debit_card";
             }
         }
     }
 
     @DeleteMapping("/delete")
-    public String deleteDebitCard(
-            @ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard,
-            final Model model) {
-          final boolean isDelete = debitCardService.deleteDebitCard(debitCard.getCardNumber());
-        if (isDelete) {
-            return "redirect:/debit-cards/list";
-        } else {
-            model.addAttribute("error", "Failed to delete debit card");
-            return "debit-cards/debit_card";
-        }
+    public String deleteDebitCard(@ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard) {
+        debitCardService.deleteDebitCard(debitCard.getId());
+        return "redirect:/debit-cards/list";
     }
 }
