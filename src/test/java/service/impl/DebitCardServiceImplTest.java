@@ -1,26 +1,229 @@
 package service.impl;
 
+import dao.DebitCardDAO;
+import dao.UserDAO;
+import entity.DebitCard;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static java.math.BigDecimal.TEN;
+import static java.time.LocalDate.now;
+import static java.util.Optional.empty;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 class DebitCardServiceImplTest {
 
+    @Mock
+    private DebitCardDAO debitCardDAO;
+
+    @Mock
+    private UserDAO userDAO;
+
+    @InjectMocks
+    private DebitCardServiceImpl debitCardServiceImpl;
+
+
     @Test
-    void getAllDebitCards() {
+    void getAllDebitCards_shouldReturnListOfCards() {
+        // Given
+        final DebitCard card = mock(DebitCard.class);
+        final List<DebitCard> cards = List.of(card);
+
+        when(debitCardDAO.getAllDebitCards()).thenReturn(cards);
+
+        // When
+        final List<DebitCard> result = debitCardServiceImpl.getAllDebitCards();
+
+        // Then
+        assertEquals(1, result.size());
+        assertEquals(card, result.get(0));
+        verify(debitCardDAO).getAllDebitCards();
     }
 
     @Test
-    void saveDebitCard() {
+    void saveDebitCard_givenValidData_shouldSaveSuccessfully() {
+        // Given
+        final String passport = "AA123456";
+        final String cardNumber = "1111-2222-3333-4444";
+        final String cvv = "123";
+        final BigDecimal balance = new BigDecimal("5000");
+        final LocalDate issueDate = LocalDate.of(2024, 1, 1);
+        final LocalDate expirationDate = LocalDate.of(2028, 1, 1);
+
+        final DebitCard expected = new DebitCard(0, cardNumber, passport, expirationDate, issueDate, cvv, balance);
+
+        when(debitCardDAO.isCardNumberAvailable(cardNumber)).thenReturn(true);
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(false);
+        when(debitCardDAO.saveDebitCard(any(DebitCard.class))).thenReturn(expected);
+
+        // When
+        final DebitCard result = debitCardServiceImpl.saveDebitCard(passport, cardNumber, cvv, balance, expirationDate, issueDate);
+
+        // Then
+        assertEquals(expected, result);
+        verify(debitCardDAO).isCardNumberAvailable(cardNumber);
+        verify(userDAO).isPassportNumberAvailable(passport);
+        verify(debitCardDAO).saveDebitCard(any(DebitCard.class));
     }
 
     @Test
-    void getDebitCardById() {
+    void saveDebitCard_givenUnavailableCardNumber_shouldThrowException() {
+        // Given
+        final String cardNumber = "1111-2222-3333-4444";
+
+        when(debitCardDAO.isCardNumberAvailable(cardNumber)).thenReturn(false);
+
+        // When + Then
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.saveDebitCard("AA123456", cardNumber, "123", TEN, now(), now())
+        );
+
+        assertEquals("Card number 1111-2222-3333-4444 is already in use.", exception.getMessage());
+        verify(debitCardDAO).isCardNumberAvailable(cardNumber);
     }
 
     @Test
-    void updateDebitCard() {
+    void saveDebitCard_givenNonExistentUser_shouldThrowException() {
+        // Given
+        final String passport = "AA123456";
+        final String cardNumber = "1111-2222-3333-4444";
+
+        when(debitCardDAO.isCardNumberAvailable(cardNumber)).thenReturn(true);
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(true);
+
+        // When + Then
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.saveDebitCard(passport, cardNumber, "123", TEN, now(), now())
+        );
+
+        assertEquals("User with passport number AA123456 does not exist.", exception.getMessage());
+        verify(userDAO).isPassportNumberAvailable(passport);
     }
 
     @Test
-    void deleteDebitCard() {
+    void getDebitCardById_givenExistingId_shouldReturnCard() {
+        // Given
+        final int id = 1;
+        final DebitCard expected = mock(DebitCard.class);
+
+        when(debitCardDAO.getDebitCardById(id)).thenReturn(Optional.of(expected));
+
+        // When
+        final Optional<DebitCard> result = debitCardServiceImpl.getDebitCardById(id);
+
+        // Then
+        assertEquals(expected, result.orElse(null));
+        verify(debitCardDAO).getDebitCardById(id);
+    }
+
+    @Test
+    void getDebitCardById_givenExistingId_shouldReturnNull() {
+        // Given
+        final int id = 1;
+
+        when(debitCardDAO.getDebitCardById(id)).thenReturn(empty());
+
+        // When
+        final Optional<DebitCard> result = debitCardServiceImpl.getDebitCardById(id);
+
+        // Then
+        assertNull(result.orElse(null));
+        verify(debitCardDAO).getDebitCardById(id);
+    }
+
+
+    @Test
+    void updateDebitCard_givenValidChange_shouldUpdateSuccessfully() {
+        // Given
+        final int id = 1;
+        final String passport = "AA123456";
+        final String cardNumber = "1111-2222-3333-4444";
+        final String cvv = "123";
+        final LocalDate issueDate = LocalDate.of(2024, 1, 1);
+        final LocalDate expirationDate = LocalDate.of(2028, 1, 1);
+
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(false);
+        doNothing().when(debitCardDAO).updateDebitCard(any(DebitCard.class));
+
+        // When
+        debitCardServiceImpl.updateDebitCard(id, passport, cardNumber, cardNumber, cvv, TEN, expirationDate, issueDate);
+
+        // Then
+        verify(debitCardDAO).updateDebitCard(any(DebitCard.class));
+        verify(userDAO).isPassportNumberAvailable(passport);
+    }
+
+    @Test
+    void updateDebitCard_givenInvalidPassport_shouldThrowException() {
+        // Given
+        final int id = 1;
+        final String cardNumber = "1111-2222-3333-4444";
+        final String passport = "ZZ999999";
+        final String cvv = "123";
+        final LocalDate issueDate = LocalDate.of(2024, 1, 1);
+        final LocalDate expirationDate = LocalDate.of(2028, 1, 1);
+
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(true);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.updateDebitCard(id, passport, cardNumber, cardNumber, cvv, TEN, expirationDate, issueDate)
+        );
+
+        // Then
+        assertEquals("User with passport number ZZ999999 does not exist.", exception.getMessage());
+        verify(userDAO).isPassportNumberAvailable(passport);
+    }
+
+    @Test
+    void updateDebitCard_givenUnavailableNewCardNumber_shouldThrowException() {
+        // Given
+        final int id = 1;
+        final String oldCardNumber = "1111-2222-3333-4444";
+        final String newCardNumber = "9999-8888-7777-6666";
+        final String passport = "AA123456";
+        final String cvv = "123";
+        final LocalDate issueDate = LocalDate.of(2024, 1, 1);
+        final LocalDate expirationDate = LocalDate.of(2028, 1, 1);
+
+        when(debitCardDAO.isCardNumberAvailable(newCardNumber)).thenReturn(false);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.updateDebitCard(id, passport, newCardNumber, oldCardNumber, cvv, TEN, expirationDate, issueDate)
+        );
+
+        // Then
+        assertEquals("Card number 9999-8888-7777-6666 is already in use.", exception.getMessage());
+        verify(debitCardDAO).isCardNumberAvailable(newCardNumber);
+        verify(userDAO, never()).isPassportNumberAvailable(any());
+        verify(debitCardDAO, never()).updateDebitCard(any());
+    }
+
+
+    @Test
+    void deleteDebitCard_shouldCallDaoDelete() {
+        // Given
+        final int id = 1;
+
+        // When
+        debitCardServiceImpl.deleteDebitCard(id);
+
+        // Then
+        verify(debitCardDAO).deleteDebitCard(id);
     }
 }

@@ -18,31 +18,31 @@
         Passport Number:<br>
         <input type="text"
                name="cardHolderPassportNumber"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.cardHolderPassportNumber : debitCard.cardHolderPassportNumber}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cardHolderPassportNumber : debitCard.cardHolderPassportNumber}"/>
     </label><br>
     <label>
         Card Number:<br>
         <input type="text"
                name="cardNumber"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.cardNumber : debitCard.cardNumber}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cardNumber : debitCard.cardNumber}"/>
     </label><br>
     <label>
         Expiration Date:<br>
         <input type="date"
                name="expirationDate"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.expirationDate : debitCard.expirationDate}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.expirationDate : debitCard.expirationDate}"/>
     </label><br>
     <label>
         CVV:<br>
         <input type="text"
                name="cvv"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.cvv : debitCard.cvv}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.cvv : debitCard.cvv}"/>
     </label><br>
     <label>
         Issue Date:<br>
         <input type="date"
                name="issueDate"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.issueDate : debitCard.issueDate}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.issueDate : debitCard.issueDate}"/>
     </label><br>
 
     <label for="balance">
@@ -52,10 +52,14 @@
                name="balance"
                step="0.01"
                min="0"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.balance : debitCard.balance}" />
+               data-th-value="${debitCardPayload != null ? debitCardPayload.balance : debitCard.balance}"/>
     </label><br>
 
     <button type="submit">Update</button>
+    <br>
+    <a href="/debit-cards/list">
+        <button type="button">Go back</button>
+    </a>
 </form>
 </body>
 </html>

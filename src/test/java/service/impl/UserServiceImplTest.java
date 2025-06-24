@@ -85,15 +85,33 @@ class UserServiceImplTest {
         final User result = userServiceImpl.saveUser(passport, name, null, null);
 
         // Then
-        verify(userDAO).isPassportNumberAvailable(passport);
-        verify(userDAO).saveUser(any(User.class));
-
         assertNotNull(result);
         assertEquals(id, result.getId());
         assertEquals(passport, result.getPassportNumber());
         assertEquals(name, result.getUserName());
         assertNull(result.getGender());
         assertNull(result.getDateOfBirth());
+        verify(userDAO).isPassportNumberAvailable(passport);
+        verify(userDAO).saveUser(any(User.class));
+    }
+
+    @Test
+    void saveUser_givenAvailablePassport_shouldReturnException() {
+        // Given
+        final String passport = "1234567890";
+
+
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(false);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> userServiceImpl.saveUser(passport, null, null, null)
+        );
+
+        // Then
+        assertEquals("User with passport number '1234567890' already exists", exception.getMessage());
+        verify(userDAO).isPassportNumberAvailable(passport);
     }
 
     @Test
