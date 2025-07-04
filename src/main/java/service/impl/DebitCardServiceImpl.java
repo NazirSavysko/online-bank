@@ -2,7 +2,9 @@ package service.impl;
 
 import dao.DebitCardDAO;
 import dao.UserDAO;
+import dto.DebitCardDTO;
 import entity.DebitCard;
+import entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import service.DebitCardService;
@@ -25,31 +27,31 @@ public class DebitCardServiceImpl implements DebitCardService {
     }
 
     @Override
-    public List<DebitCard> getAllDebitCards() {
+    public List<DebitCardDTO> getAllDebitCards() {
         return debitCardDAO.getAllDebitCards();
     }
 
     @Override
-    public DebitCard saveDebitCard(final String holderPassportNumber,
-                                   final String cardNumber,
-                                   final String cvv,
-                                   final BigDecimal balance,
-                                   final LocalDate expirationDate,
-                                   final LocalDate issueDate) {
+    public DebitCardDTO saveDebitCard(final String holderPassportNumber,
+                                      final String cardNumber,
+                                      final String cvv,
+                                      final BigDecimal balance,
+                                      final LocalDate expirationDate,
+                                      final LocalDate issueDate) {
         if (!this.debitCardDAO.isCardNumberAvailable(cardNumber)) {
             throw new IllegalArgumentException("Card number " + cardNumber + " is already in use.");
         }
         if (this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
-            throw new IllegalArgumentException("User with passport number " + holderPassportNumber + " does not exist.");
+            throw new IllegalArgumentException("UserDTO with passport number " + holderPassportNumber + " does not exist.");
         }
-
-        final DebitCard debitCard = new DebitCard(0, cardNumber, holderPassportNumber, expirationDate, issueDate, cvv, balance);
+        final User user = this.userDAO.getUserByPassportNumber(holderPassportNumber);
+        final DebitCard debitCard = new DebitCard(0, cardNumber, user, expirationDate, issueDate, cvv, balance);
         return debitCardDAO.saveDebitCard(debitCard);
 
     }
 
     @Override
-    public Optional<DebitCard> getDebitCardById(final int id) {
+    public Optional<DebitCardDTO> getDebitCardById(final int id) {
         return debitCardDAO.getDebitCardById(id);
     }
 
@@ -59,9 +61,10 @@ public class DebitCardServiceImpl implements DebitCardService {
             throw new IllegalArgumentException("Card number " + cardNumber + " is already in use.");
         }
         if (this.userDAO.isPassportNumberAvailable(holderPassportNumber)) {
-            throw new IllegalArgumentException("User with passport number " + holderPassportNumber + " does not exist.");
+            throw new IllegalArgumentException("UserDTO with passport number " + holderPassportNumber + " does not exist.");
         } else {
-            final DebitCard debitCard = new DebitCard(id, cardNumber, holderPassportNumber, expirationDate, issueDate, cvv, balance);
+            final User user = this.userDAO.getUserByPassportNumber(holderPassportNumber);
+            final DebitCard debitCard = new DebitCard(id, cardNumber, user, expirationDate, issueDate, cvv, balance);
             debitCardDAO.updateDebitCard(debitCard);
         }
     }

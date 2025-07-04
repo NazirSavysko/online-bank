@@ -1,6 +1,6 @@
 package service;
 
-import entity.Mortgage;
+import dto.MortgageDTO;
 import entity.enums.Mortgage_Term;
 
 import java.math.BigDecimal;
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MortgageService {
-    List<Mortgage> getAllMortgages();
+    List<MortgageDTO> getAllMortgages();
 
-    Mortgage saveMortgage(String holderPassport, Mortgage_Term mortgageTerm, BigDecimal mortgageAmount, BigDecimal mortgageCurrentAmount);
+    MortgageDTO saveMortgage(String holderPassport, Mortgage_Term mortgageTerm, BigDecimal mortgageAmount, BigDecimal mortgageCurrentAmount);
 
-    Optional<Mortgage> getMortgageById(int mortgageId);
+    Optional<MortgageDTO> getMortgageById(int mortgageId);
 
     boolean updateMortgage(String holderPassport, Mortgage_Term mortgageTerm, BigDecimal mortgageAmount, BigDecimal mortgageCurrentAmount, int mortgageId);
 

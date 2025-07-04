@@ -1,99 +1,114 @@
 package dao.impl;
 
 import dao.AutoLoanDAO;
-import dao.UserDAO;
+import dto.AutoLoanDTO;
 import entity.AutoLoan;
-import entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static dao.sql.AutoLoanSql.*;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+
 
 @Repository
 public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final UserDAO userDAO;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    public AutoLoanDataBaseDAOImpl(final JdbcTemplate jdbcTemplate, final UserDAO userDAO) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userDAO = userDAO;
+    public AutoLoanDataBaseDAOImpl(final EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
     }
 
+    @Contract(pure = true)
     @Override
-    public @NotNull List<AutoLoan> getAllAutoLoans() {
-        return jdbcTemplate.query(SELECT_ALL, this::autoLoanRowMapper);
+    public @NotNull @Unmodifiable List<AutoLoanDTO> getAllAutoLoans() {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final List<AutoLoan> autoLoans = entityManager.createQuery("SELECT a FROM AutoLoan a", AutoLoan.class)
+                .getResultList();
+        entityManager.close();
+        return autoLoans.stream()
+                .map(this::mapToAutoLoanDTO)
+                .toList();
     }
 
-    @Contract("_ -> param1")
+
+    @Contract(pure = true)
     @Override
-    public @NotNull AutoLoan saveAutoLoan(final @NotNull AutoLoan autoLoan) {
-        final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
-        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+    public @Nullable AutoLoanDTO saveAutoLoan(final AutoLoan autoLoan) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction entityTransaction = entityManager.getTransaction();
+        entityTransaction.begin();
 
-        jdbcTemplate.update(connection -> {
-            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
-            ps.setLong(1, user.getId());
-            ps.setBigDecimal(2, autoLoan.getCreditAmount());
-            ps.setBigDecimal(3, autoLoan.getCurrentCreditAmount());
-            ps.setInt(4, autoLoan.getCreditTermInMonths());
-            return ps;
-        }, holder);
-        autoLoan.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
+        entityManager.persist(autoLoan);
 
-        return autoLoan;
+        entityTransaction.commit();
+        entityManager.close();
 
+        return mapToAutoLoanDTO(autoLoan);
     }
 
+    @Contract(pure = true)
     @Override
-    public @NotNull Optional<AutoLoan> getAutoLoanById(final int autoLoanId) {
-        final List<AutoLoan> autoLoans = jdbcTemplate.query(SELECT_BY_ID, this::autoLoanRowMapper, autoLoanId);
+    public @NotNull Optional<AutoLoanDTO> getAutoLoanById(final int autoLoanId) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final AutoLoan autoLoan = entityManager.find(AutoLoan.class, autoLoanId);
+        entityManager.close();
 
-        return autoLoans.stream().findFirst();
-    }
-
-    @Override
-    public boolean updateAutoLoan(final @NotNull AutoLoan autoLoan) {
-        final User user = this.userDAO.getUserByPassportNumber(autoLoan.getCreditHolderPassportNumber());
-
-
-        int rowsAffected = jdbcTemplate.update(UPDATE,
-                user.getId(),
-                autoLoan.getCreditAmount(),
-                autoLoan.getCurrentCreditAmount(),
-                autoLoan.getCreditTermInMonths(),
-                autoLoan.getId());
-        return rowsAffected > 0;
+        return ofNullable( autoLoan == null ? null :mapToAutoLoanDTO(autoLoan));
     }
 
     @Override
     public void deleteAutoLoan(final int autoLoanId) {
-        jdbcTemplate.update(DELETE, autoLoanId);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+
+        final AutoLoan autoLoan = entityManager.find(AutoLoan.class, autoLoanId);
+        entityManager.remove(autoLoan);
+
+        transaction.commit();
+        entityManager.close();
     }
 
-    private @NotNull AutoLoan autoLoanRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
-        final AutoLoan autoLoan = new AutoLoan();
+    @Override
+    public boolean updateAutoLoan(final @NotNull AutoLoan autoLoan) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
 
-        autoLoan.setId(resultSet.getInt("id"));
-        autoLoan.setCreditHolderPassportNumber(resultSet.getString("passport_number"));
-        autoLoan.setCreditAmount(resultSet.getBigDecimal("loan_amount"));
-        autoLoan.setCurrentCreditAmount(resultSet.getBigDecimal("current_loan_amount"));
-        autoLoan.setCreditTermInMonths(resultSet.getInt("loan_term"));
+        final AutoLoan existingAutoLoan = entityManager.find(AutoLoan.class, autoLoan.getId());
 
-        return autoLoan;
+        existingAutoLoan.setCreditAmount(autoLoan.getCreditAmount());
+        existingAutoLoan.setCurrentCreditAmount(autoLoan.getCurrentCreditAmount());
+        existingAutoLoan.setCreditTermInMonths(autoLoan.getCreditTermInMonths());
+        existingAutoLoan.setCreditHolder(autoLoan.getCreditHolder());
+
+
+        transaction.commit();
+        entityManager.close();
+
+        return true;
+    }
+
+    @Contract("_ -> new")
+    private @NotNull AutoLoanDTO mapToAutoLoanDTO(final @NotNull AutoLoan autoLoan) {
+        return new AutoLoanDTO(
+                autoLoan.getId(),
+                autoLoan.getCreditAmount(),
+                autoLoan.getCurrentCreditAmount(),
+                autoLoan.getCreditTermInMonths(),
+                autoLoan.getCreditHolder().getPassportNumber()
+        );
     }
 }
 

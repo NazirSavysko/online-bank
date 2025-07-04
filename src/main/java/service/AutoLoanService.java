@@ -1,17 +1,17 @@
 package service;
 
-import entity.AutoLoan;
+import dto.AutoLoanDTO;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 public interface AutoLoanService {
-    List<AutoLoan> getAllAutoLoans();
+    List<AutoLoanDTO> getAllAutoLoans();
 
-    AutoLoan saveAutoLoan(String UserPassportNumber, BigDecimal amount, BigDecimal currentAmount, int termInMonths);
+    AutoLoanDTO saveAutoLoan(String UserPassportNumber, BigDecimal amount, BigDecimal currentAmount, int termInMonths);
 
-    Optional<AutoLoan> getAutoLoanById(int autoLoanId);
+    Optional<AutoLoanDTO> getAutoLoanById(int autoLoanId);
 
     boolean updateAutoLoan(String UserPassportNumber, BigDecimal amount, BigDecimal currentAmount, int termInMonths, int autoLoanId);
 

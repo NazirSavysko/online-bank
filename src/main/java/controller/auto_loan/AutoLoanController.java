@@ -1,7 +1,7 @@
 package controller.auto_loan;
 
 import controller.payload.auto_loan.UpdateAutoLoanPayload;
-import entity.AutoLoan;
+import dto.AutoLoanDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -34,7 +34,7 @@ public final class AutoLoanController {
     }
 
     @ModelAttribute("autoLoan")
-    public AutoLoan autoLoan(@PathVariable("autoLoanId") final int autoLoanId) {
+    public AutoLoanDTO autoLoan(@PathVariable("autoLoanId") final int autoLoanId) {
         return this.autoLoanService.getAutoLoanById(autoLoanId)
                 .orElseThrow(() -> new NoSuchElementException(AUTO_LOAN_NOT_FOUND_MESSAGE.formatted(autoLoanId)));
     }
@@ -51,7 +51,7 @@ public final class AutoLoanController {
 
     @PutMapping("/edit")
     public String updateAutoLoan(
-            @ModelAttribute(value = "autoLoan", binding = false) final AutoLoan autoLoan,
+            @ModelAttribute(value = "autoLoan", binding = false) final AutoLoanDTO autoLoan,
             @Valid @ModelAttribute("autoLoanPayload") final UpdateAutoLoanPayload payload,
             final BindingResult bindingResult,
             final Model model) {
@@ -66,11 +66,11 @@ public final class AutoLoanController {
                     payload.amount(),
                     payload.currentAmount(),
                     payload.termInMonths(),
-                    autoLoan.getId()
+                    autoLoan.id()
             );
 
             if (updatedAutoLoan) {
-                return "redirect:/auto-loans/%d".formatted(autoLoan.getId());
+                return "redirect:/auto-loans/%d".formatted(autoLoan.id());
             } else {
                 final ObjectError error = new ObjectError("autoLoan", " holder with this passport number does not exist ");
                 model.addAttribute("errors", error);
@@ -81,8 +81,8 @@ public final class AutoLoanController {
     }
 
     @DeleteMapping("/delete")
-    public String deleteAutoLoan(@ModelAttribute(value = "autoLoan", binding = false) final AutoLoan autoLoan) {
-        this.autoLoanService.deleteAutoLoan(autoLoan.getId());
+    public String deleteAutoLoan(@ModelAttribute(value = "autoLoan", binding = false) final AutoLoanDTO autoLoan) {
+        this.autoLoanService.deleteAutoLoan(autoLoan.id());
 
         return "redirect:/auto-loans/list";
     }

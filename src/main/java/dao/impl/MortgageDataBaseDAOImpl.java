@@ -1,100 +1,106 @@
 package dao.impl;
 
 import dao.MortgageDAO;
-import dao.UserDAO;
+import dto.MortgageDTO;
 import entity.Mortgage;
-import entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.jetbrains.annotations.Unmodifiable;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static dao.sql.MortgageSql.*;
-import static entity.enums.Mortgage_Term.valueOf;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+
 
 @Repository
 public final class MortgageDataBaseDAOImpl implements MortgageDAO {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final UserDAO userDAO;
+    private final EntityManagerFactory entityManagerFactory;
 
-    @Autowired
-    public MortgageDataBaseDAOImpl(final JdbcTemplate jdbcTemplate, final UserDAO userDAO) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userDAO = userDAO;
+    public MortgageDataBaseDAOImpl(final EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+
+    @Contract(pure = true)
+    @Override
+    public @NotNull @Unmodifiable List<MortgageDTO> getAllMortgages() {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final List<Mortgage> mortgages = entityManager.createQuery("SELECT m FROM Mortgage m", Mortgage.class)
+                .getResultList();
+        entityManager.close();
+
+        return mortgages.stream()
+                .map(this::mapToMortgageDTO)
+                .toList();
     }
 
     @Override
-    public @NotNull List<Mortgage> getAllMortgages() {
-        return jdbcTemplate.query(SELECT_ALL, this::mortgageRowMapper);
-    }
-
-    @Contract("_ -> param1")
-    @Override
-    public @NotNull Mortgage saveMortgage(final @NotNull Mortgage mortgage) {
-        final User user = this.userDAO.getUserByPassportNumber(mortgage.getMortgageHolderPassportNumber());
-        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
-            ps.setLong(1, user.getId());
-            ps.setBigDecimal(2, mortgage.getMortgageAmount());
-            ps.setBigDecimal(3, mortgage.getCurrentMortgageAmount());
-            ps.setString(4, mortgage.getMortgageTerm().toString());
-            return ps;
-        }, holder);
-
-        mortgage.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
-        return mortgage;
+    public @NotNull MortgageDTO saveMortgage(final Mortgage mortgage) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+        entityManager.persist(mortgage);
+        transaction.commit();
+        entityManager.close();
+        return mapToMortgageDTO(mortgage);
     }
 
     @Override
-    public @NotNull Optional<Mortgage> getMortgageById(final int mortgageId) {
-        final List<Mortgage> mortgages = jdbcTemplate.query(SELECT_BY_ID, this::mortgageRowMapper, mortgageId);
+    public @NotNull Optional<MortgageDTO> getMortgageById(final int mortgageId) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final Mortgage mortgage = entityManager.find(Mortgage.class, mortgageId);
+        entityManager.close();
 
-        return mortgages.stream().findFirst();
+        return ofNullable( mortgage == null ? null :mapToMortgageDTO(mortgage));
     }
 
     @Override
     public boolean updateMortgage(final @NotNull Mortgage mortgage) {
-        final User user = this.userDAO.getUserByPassportNumber(mortgage.getMortgageHolderPassportNumber());
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
 
-        final int rowsAffected = jdbcTemplate.update(UPDATE,
-                user.getId(),
-                mortgage.getMortgageAmount(),
-                mortgage.getCurrentMortgageAmount(),
-                mortgage.getMortgageTerm().toString(),
-                mortgage.getId()
-        );
+        final Mortgage existingMortgage = entityManager.find(Mortgage.class, mortgage.getId());
 
-        return rowsAffected > 0;
+        existingMortgage.setMortgageTerm(mortgage.getMortgageTerm());
+        existingMortgage.setMortgageAmount(mortgage.getMortgageAmount());
+        existingMortgage.setCurrentMortgageAmount(mortgage.getCurrentMortgageAmount());
+        existingMortgage.setMortgageHolder(mortgage.getMortgageHolder());
+
+        transaction.commit();
+        entityManager.close();
+
+        return true;
     }
 
     @Override
     public void deleteMortgage(final int id) {
-        jdbcTemplate.update(DELETE, id);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+
+        final Mortgage mortgage = entityManager.find(Mortgage.class, id);
+        entityManager.remove(mortgage);
+
+        transaction.commit();
+        entityManager.close();
     }
 
-    private @NotNull Mortgage mortgageRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
-        final Mortgage mortgage = new Mortgage();
 
-        mortgage.setId(resultSet.getInt("id"));
-        mortgage.setMortgageHolderPassportNumber(resultSet.getString("passport_number"));
-        mortgage.setMortgageAmount(resultSet.getBigDecimal("mortgage_amount"));
-        mortgage.setCurrentMortgageAmount(resultSet.getBigDecimal("current_mortgage_amount"));
-        mortgage.setMortgageTerm(valueOf(resultSet.getString("mortgage_term")));
-
-        return mortgage;
+    @Contract("_ -> new")
+    private @NotNull MortgageDTO mapToMortgageDTO(final @NotNull Mortgage mortgage) {
+        return new MortgageDTO(
+                mortgage.getId(),
+                mortgage.getMortgageAmount(),
+                mortgage.getMortgageHolder().getPassportNumber(),
+                mortgage.getCurrentMortgageAmount(),
+                mortgage.getMortgageTerm()
+        );
     }
-
 }

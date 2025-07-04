@@ -1,111 +1,127 @@
 package dao.impl;
 
 import dao.DebitCardDAO;
-import dao.UserDAO;
+import dto.DebitCardDTO;
 import entity.DebitCard;
-import entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static dao.sql.DebitCardSql.*;
-import static java.sql.Date.valueOf;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 
 @Repository
 public final class DebitCardDataBaseDAOImpl implements DebitCardDAO {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final UserDAO userDAO;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    public DebitCardDataBaseDAOImpl(final JdbcTemplate jdbcTemplate, final UserDAO userDAO) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userDAO = userDAO;
+    public DebitCardDataBaseDAOImpl(final EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
     }
 
+    @Contract(pure = true)
     @Override
-    public @NotNull List<DebitCard> getAllDebitCards() {
-        return jdbcTemplate.query(SELECT_ALL, this::debitCardRowMapper);
+    public @NotNull @Unmodifiable List<DebitCardDTO> getAllDebitCards() {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final List<DebitCard> debitCards = entityManager
+                .createQuery("SELECT d FROM DebitCard d", DebitCard.class)
+                .getResultList();
+
+        entityManager.close();
+
+        return debitCards.stream()
+                .map(this::mapToDebitCardDTO)
+                .toList();
     }
 
     @Override
     public boolean isCardNumberAvailable(final String cardNumber) {
-        final Integer count = jdbcTemplate.queryForObject(CHECK_CARD_NUMBER, Integer.class, cardNumber);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final Long count = entityManager
+                .createQuery("SELECT COUNT(d) FROM DebitCard d WHERE d.cardNumber = :cardNumber", Long.class)
+                .setParameter("cardNumber", cardNumber)
+                .getSingleResult();
 
-        return count != null && count == 0;
+        entityManager.close();
+
+        return count == 0;
     }
 
-    @Contract("_ -> param1")
     @Override
-    public @NotNull DebitCard saveDebitCard(final @NotNull DebitCard debitCard) {
-        final User user = userDAO.getUserByPassportNumber(debitCard.getCardHolderPassportNumber());
-        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+    public @NotNull DebitCardDTO saveDebitCard(final DebitCard debitCard) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
 
-        jdbcTemplate.update(connection -> {
-            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
-            ps.setString(1, debitCard.getCardNumber());
-            ps.setLong(2, user.getId());
-            ps.setDate(3, valueOf(debitCard.getExpirationDate()));
-            ps.setDate(4, valueOf(debitCard.getIssueDate()));
-            ps.setString(5, debitCard.getCvv());
-            ps.setBigDecimal(6, debitCard.getBalance());
-            return ps;
-        }, holder);
+        entityManager.persist(debitCard);
 
-        debitCard.setId((int) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
-        return debitCard;
+        transaction.commit();
+        entityManager.close();
+
+        return mapToDebitCardDTO(debitCard);
     }
 
-
     @Override
-    public void updateDebitCard(final @NotNull DebitCard debitCard) {
-        final User user = userDAO.getUserByPassportNumber(debitCard.getCardHolderPassportNumber());
+    public void updateDebitCard(final DebitCard debitCard) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
 
-        jdbcTemplate.update(UPDATE,
-                debitCard.getCardNumber(),
-                valueOf(debitCard.getExpirationDate()),
-                valueOf(debitCard.getIssueDate()),
-                debitCard.getCvv(),
-                debitCard.getBalance(),
-                user.getId(),
-                debitCard.getId()
-        );
+        final DebitCard existingDebitCard = entityManager.find(DebitCard.class, debitCard.getId());
+
+        existingDebitCard.setCardNumber(debitCard.getCardNumber());
+        existingDebitCard.setCvv(debitCard.getCvv());
+        existingDebitCard.setBalance(debitCard.getBalance());
+        existingDebitCard.setExpirationDate(debitCard.getExpirationDate());
+        existingDebitCard.setIssueDate(debitCard.getIssueDate());
+        existingDebitCard.setCardHolder(debitCard.getCardHolder());
+
+        transaction.commit();
+        entityManager.close();
     }
 
     @Override
     public void deleteDebitCard(final int id) {
-        jdbcTemplate.update(DELETE, id);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+
+        final DebitCard debitCard = entityManager.find(DebitCard.class, id);
+
+        entityManager.remove(debitCard);
+
+        transaction.commit();
+        entityManager.close();
     }
 
     @Override
-    public @NotNull Optional<DebitCard> getDebitCardById(final int id) {
-        return ofNullable(jdbcTemplate.queryForObject(SELECT_BY_ID, this::debitCardRowMapper, id));
+    public Optional<DebitCardDTO> getDebitCardById(final int id) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final DebitCard debitCard = entityManager.find(DebitCard.class, id);
+        entityManager.close();
+
+        return ofNullable( debitCard == null ? null :mapToDebitCardDTO(debitCard));
     }
 
-    private @NotNull DebitCard debitCardRowMapper(final @NotNull ResultSet resultSet, final int i) throws SQLException {
-        final DebitCard debitCard = new DebitCard();
-
-        debitCard.setId(resultSet.getInt("id"));
-        debitCard.setCardNumber(resultSet.getString("card_number"));
-        debitCard.setCardHolderPassportNumber(resultSet.getString("passport_number"));
-        debitCard.setExpirationDate(resultSet.getDate("expiration_date").toLocalDate());
-        debitCard.setCvv(resultSet.getString("cvv"));
-        debitCard.setBalance(resultSet.getBigDecimal("balance"));
-        debitCard.setIssueDate(resultSet.getDate("issue_date").toLocalDate());
-
-        return debitCard;
+    @Contract("_ -> new")
+    private @NotNull DebitCardDTO mapToDebitCardDTO(final @NotNull DebitCard debitCard) {
+        return new DebitCardDTO(
+                debitCard.getId(),
+                debitCard.getCardNumber(),
+                debitCard.getCardHolder().getPassportNumber(),
+                debitCard.getExpirationDate(),
+                debitCard.getIssueDate(),
+                debitCard.getCvv(),
+                debitCard.getBalance()
+        );
     }
 }

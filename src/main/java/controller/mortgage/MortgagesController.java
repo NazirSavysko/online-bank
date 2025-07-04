@@ -1,7 +1,7 @@
 package controller.mortgage;
 
 import controller.payload.mortgage.NewMortgagePayload;
-import entity.Mortgage;
+import dto.MortgageDTO;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -55,14 +55,14 @@ public final class MortgagesController {
             return "mortgages/new_mortgage";
         } else {
             try {
-                final Mortgage createdMortgage = this.mortgageService.saveMortgage(
+                final MortgageDTO createdMortgage = this.mortgageService.saveMortgage(
                         payload.mortgageHolderPassportNumber(),
                         payload.mortgageTerm(),
                         payload.amount(),
                         payload.currentAmount()
                 );
 
-                return "redirect:/mortgages/%d".formatted(createdMortgage.getId());
+                return "redirect:/mortgages/%d".formatted(createdMortgage.id());
             } catch (IllegalArgumentException e) {
                 final ObjectError error = new ObjectError("mortgagePayload", e.getMessage());
                 model.addAttribute("errors", error);

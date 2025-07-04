@@ -1,7 +1,7 @@
 package controller.user;
 
 import controller.payload.user.UpdateUserPayload;
-import entity.User;
+import dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/users/{userId:\\d+}")
 public class UserController {
 
-    private final String USER_NOT_FOUND_MESSAGE = "User with id %d not found.";
+    private final String USER_NOT_FOUND_MESSAGE = "UserDTO with id %d not found.";
 
     private final UserService userService;
     private final Validator userValidator;
@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @ModelAttribute("user")
-    public User user(@PathVariable("userId") final int id) {
+    public UserDTO user(@PathVariable("userId") final int id) {
         return this.userService.getUserById(id)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND_MESSAGE.formatted(id)));
     }
@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @PutMapping("/edit")
-    public String updateUser(@ModelAttribute(value = "user", binding = false) final User user,
+    public String updateUser(@ModelAttribute(value = "user", binding = false) final UserDTO user,
                              @Valid @ModelAttribute("userPayload") final UpdateUserPayload payload,
                              final BindingResult bindingResult,
                              final Model model) {
@@ -61,16 +61,16 @@ public class UserController {
         } else {
             final boolean isUpdated = this.userService.updateUser(
                     payload.passportNumber(),
-                    user.getPassportNumber(),
+                    user.passportNumber(),
                     payload.userName(),
                     payload.gender(),
                     payload.dateOfBirth(),
-                    user.getId()
+                    user.id()
             );
             if (isUpdated) {
-                return "redirect:/users/%d".formatted(user.getId());
+                return "redirect:/users/%d".formatted(user.id());
             } else {
-                final ObjectError error = new ObjectError("user", "User with this passport number already exists.");
+                final ObjectError error = new ObjectError("user", "UserDTO with this passport number already exists.");
                 model.addAttribute("error", error);
 
                 return "users/update_user";
@@ -80,8 +80,8 @@ public class UserController {
     }
 
     @DeleteMapping("/delete")
-    public String deleteUser(@ModelAttribute(value = "user") final User user) {
-        this.userService.deleteUser(user.getId());
+    public String deleteUser(@ModelAttribute(value = "user") final UserDTO user) {
+        this.userService.deleteUser(user.id());
 
         return "redirect:/users/list";
     }

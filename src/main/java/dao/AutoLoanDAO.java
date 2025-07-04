@@ -1,16 +1,17 @@
 package dao;
 
+import dto.AutoLoanDTO;
 import entity.AutoLoan;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface AutoLoanDAO {
-    List<AutoLoan> getAllAutoLoans();
+    List<AutoLoanDTO> getAllAutoLoans();
 
-    AutoLoan saveAutoLoan(AutoLoan autoLoan);
+    AutoLoanDTO saveAutoLoan(AutoLoan autoLoan);
 
-    Optional<AutoLoan> getAutoLoanById(int autoLoanId);
+    Optional<AutoLoanDTO> getAutoLoanById(int autoLoanId);
 
     void deleteAutoLoan(int autoLoanId);
 

@@ -1,7 +1,7 @@
 package controller.debit_card;
 
 import controller.payload.debit_card.NewDebitCardPayload;
-import entity.DebitCard;
+import dto.DebitCardDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -53,7 +53,7 @@ public final class DebitCardsController {
             return "debit-cards/new_debit_card";
         } else {
             try {
-                final DebitCard debitCard = this.debitCardService.saveDebitCard(
+                final DebitCardDTO debitCard = this.debitCardService.saveDebitCard(
                         payload.cardHolderPassportNumber(),
                         payload.cardNumber(),
                         payload.cvv(),
@@ -62,7 +62,7 @@ public final class DebitCardsController {
                         payload.issueDate()
                 );
 
-                return "redirect:/debit-cards/%d".formatted(debitCard.getId());
+                return "redirect:/debit-cards/%d".formatted(debitCard.id());
             } catch (final IllegalArgumentException e) {
                 ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
                 model.addAttribute("errors", error);

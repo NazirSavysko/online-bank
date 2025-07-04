@@ -1,7 +1,7 @@
 package controller.auto_loan;
 
 import controller.payload.auto_loan.NewAutoLoanPayload;
-import entity.AutoLoan;
+import dto.AutoLoanDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -55,14 +55,14 @@ public final class AutoLoansController {
             return "auto-loans/new_auto_loan";
         } else {
             try {
-                final AutoLoan createdAutoLoan = this.autoLoanService.saveAutoLoan(
+                final AutoLoanDTO createdAutoLoan = this.autoLoanService.saveAutoLoan(
                         payload.holderPassportNumber(),
                         payload.amount(),
                         payload.currentAmount(),
                         payload.termInMonths()
                 );
 
-                return "redirect:/auto-loans/%d".formatted(createdAutoLoan.getId());
+                return "redirect:/auto-loans/%d".formatted(createdAutoLoan.id());
             } catch (IllegalArgumentException e) {
                 ObjectError error = new ObjectError("autoLoanPayload", e.getMessage());
                 model.addAttribute("errors", error);

@@ -1,16 +1,17 @@
 package dao;
 
+import dto.MortgageDTO;
 import entity.Mortgage;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface MortgageDAO {
-    List<Mortgage> getAllMortgages();
+    List<MortgageDTO> getAllMortgages();
 
-    Mortgage saveMortgage(Mortgage mortgage);
+    MortgageDTO saveMortgage(Mortgage mortgage);
 
-    Optional<Mortgage> getMortgageById(int mortgageId);
+    Optional<MortgageDTO> getMortgageById(int mortgageId);
 
     boolean updateMortgage(final Mortgage mortgage);
 

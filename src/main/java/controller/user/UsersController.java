@@ -1,7 +1,7 @@
 package controller.user;
 
 import controller.payload.user.NewUserPayload;
-import entity.User;
+import dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -55,14 +55,14 @@ public final class UsersController {
             return "users/new_user";
         } else {
             try {
-                final User createdUser = this.userService.saveUser(
+                final UserDTO createdUser = this.userService.saveUser(
                         payload.passportNumber(),
                         payload.userName(),
                         payload.gender(),
                         payload.dateOfBirth()
                 );
 
-                return "redirect:/users/%d".formatted(createdUser.getId());
+                return "redirect:/users/%d".formatted(createdUser.id());
             } catch (final IllegalArgumentException e) {
                 ObjectError error = new ObjectError("userPayload", e.getMessage());
                 model.addAttribute("errors", error);

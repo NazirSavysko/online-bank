@@ -90,7 +90,7 @@ public final class MyOwnValidator implements Validator {
                     if (value instanceof LocalDate birthDate) {
                         final int age = LocalDate.now().getYear() - birthDate.getYear();
                         if (age < 18) {
-                            errors.rejectValue(field.getName(), "field.minAge", "User must be at least 18 years old");
+                            errors.rejectValue(field.getName(), "field.minAge", "UserDTO must be at least 18 years old");
                         }
                     }
 

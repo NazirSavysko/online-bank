@@ -1,20 +1,21 @@
 package dao;
 
+import dto.UserDTO;
 import entity.User;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserDAO {
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
     boolean isPassportNumberAvailable(String passportNumber);
 
-    Optional<User> getUserById(int id);
+    Optional<UserDTO> getUserById(int id);
 
     User getUserByPassportNumber(String passportNumber);
 
-    User saveUser(User user);
+    UserDTO saveUser(User user);
 
     boolean updateUser(User user);
 

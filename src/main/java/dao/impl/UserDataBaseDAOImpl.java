@@ -1,103 +1,133 @@
 package dao.impl;
 
 import dao.UserDAO;
+import dto.UserDTO;
 import entity.User;
-import entity.enums.Gender;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import static dao.sql.UserSql.*;
-import static java.sql.Date.valueOf;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 
 
 @Repository
 public final class UserDataBaseDAOImpl implements UserDAO {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    public UserDataBaseDAOImpl(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public UserDataBaseDAOImpl(final EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     @Override
-    public @NotNull List<User> getAllUsers() {
-        return jdbcTemplate.query(SELECT_ALL, this::userRowMapper);
+    public @NotNull @Unmodifiable List<UserDTO> getAllUsers() {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        final List<User> users = entityManager
+                .createQuery("SELECT u FROM User u", User.class)
+                .getResultList();
+
+        entityManager.close();
+
+        return users.stream().map(this::mapToUserDTO).toList();
     }
 
     @Override
     public boolean isPassportNumberAvailable(final String passportNumber) {
-        final Integer count = jdbcTemplate.queryForObject(COUNT_BY_PASSPORT_NUMBER, Integer.class, passportNumber);
-        return count != null && count == 0;
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        final Long count = entityManager
+                .createQuery("SELECT COUNT(u) FROM User u WHERE u.passportNumber = :passportNumber", Long.class)
+                .setParameter("passportNumber", passportNumber)
+                .getSingleResult();
+
+        entityManager.close();
+
+        return count == 0;
     }
 
     @Override
-    public @NotNull Optional<User> getUserById(final int id) {
-        final List<User> users = jdbcTemplate
-                .query(SELECT_BY_ID, this::userRowMapper, id);
+    public @NotNull Optional<UserDTO> getUserById(final int id) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        return users.stream().findFirst();
+        final User user = entityManager.find(User.class, id);
+
+        entityManager.close();
+
+        return ofNullable( user == null ? null : mapToUserDTO(user));
     }
 
     @Override
     public User getUserByPassportNumber(final String passportNumber) {
-        final List<User> users = jdbcTemplate
-                .query(SELECT_BY_PASSPORT_NUMBER, this::userRowMapper, passportNumber);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        return users.get(0);
-    }
+        final User user = entityManager
+                .createQuery("SELECT u FROM User u WHERE u.passportNumber = :passportNumber", User.class)
+                .setParameter("passportNumber", passportNumber)
+                .getSingleResult();
 
-    @Contract("_ -> param1")
-    @Override
-    public @NotNull User saveUser(final @NotNull User user) {
-        final GeneratedKeyHolder holder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            final PreparedStatement ps = connection.prepareStatement(INSERT, RETURN_GENERATED_KEYS);
-            ps.setString(1, user.getPassportNumber());
-            ps.setString(2, user.getUserName());
-            ps.setDate(3, valueOf(user.getDateOfBirth()));
-            ps.setString(4, user.getGender().toString());
-            return ps;
-        }, holder);
-        user.setId((long) requireNonNull(requireNonNull(holder.getKeys()).get("id")));
+        entityManager.close();
 
         return user;
     }
 
     @Override
-    public boolean updateUser(final @NotNull User user) {
-        final int rowsAffected = jdbcTemplate.update(UPDATE, user.getUserName(), user.getDateOfBirth(),
-                user.getGender().toString(), user.getPassportNumber(), user.getId());
+    public @NotNull UserDTO saveUser(final User user) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+        entityManager.persist(user);
+        transaction.commit();
+        entityManager.close();
+        return mapToUserDTO(user);
+    }
 
-        return rowsAffected > 0;
+    @Override
+    public boolean updateUser(final User user) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+
+        final User existingUser = entityManager.find(User.class, user.getId());
+
+        existingUser.setUserName(user.getUserName());
+        existingUser.setGender(user.getGender());
+        existingUser.setDateOfBirth(user.getDateOfBirth());
+        existingUser.setPassportNumber(user.getPassportNumber());
+
+        transaction.commit();
+        entityManager.close();
+        return true;
     }
 
     @Override
     public void deleteUser(final long id) {
-        jdbcTemplate.update(DELETE, id);
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        transaction.begin();
+        final User user = entityManager.find(User.class, id);
+        entityManager.remove(user);
+        transaction.commit();
+        entityManager.close();
     }
 
-    private @NotNull User userRowMapper(final @NotNull ResultSet rs, final int rowNum) throws SQLException {
-        final User user = new User();
-
-        user.setId(rs.getLong("id"));
-        user.setUserName(rs.getString("userName"));
-        user.setGender(Gender.valueOf(rs.getString("gender").toUpperCase().trim()));
-        user.setDateOfBirth(rs.getDate("birthdate").toLocalDate());
-        user.setPassportNumber(rs.getString("passport_number"));
-
-        return user;
+    @Contract("_ -> new")
+    private @NotNull UserDTO mapToUserDTO(final @NotNull User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getUserName(),
+                user.getGender(),
+                user.getDateOfBirth(),
+                user.getPassportNumber()
+        );
     }
 }

@@ -1,6 +1,6 @@
 package service;
 
-import entity.DebitCard;
+import dto.DebitCardDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DebitCardService {
-    List<DebitCard> getAllDebitCards();
+    List<DebitCardDTO> getAllDebitCards();
 
-    DebitCard saveDebitCard( String holderPassportNumber, String cardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
+    DebitCardDTO saveDebitCard(String holderPassportNumber, String cardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
 
-    Optional<DebitCard> getDebitCardById(int id);
+    Optional<DebitCardDTO> getDebitCardById(int id);
 
     void updateDebitCard(int id, String holderPassportNumber, String cardNumber,String pastCardNumber, String cvv, BigDecimal balance, LocalDate expirationDate, LocalDate issueDate);
 

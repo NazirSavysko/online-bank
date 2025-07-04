@@ -1,7 +1,7 @@
 package controller.mortgage;
 
 import controller.payload.mortgage.UpdateMortgagePayload;
-import entity.Mortgage;
+import dto.MortgageDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/mortgages/{mortgageId}")
 public final class MortgageController {
 
-    private final String MORTGAGE_NOT_FOUND_MESSAGE = "Mortgage with ID '%d' not found.";
+    private final String MORTGAGE_NOT_FOUND_MESSAGE = "MortgageDTO with ID '%d' not found.";
 
     private final MortgageService mortgageService;
     private final MyOwnValidator mortgageValidator;
@@ -30,7 +30,7 @@ public final class MortgageController {
     }
 
     @ModelAttribute("mortgage")
-    public Mortgage getMortgage(@PathVariable("mortgageId") final int mortgageId) {
+    public MortgageDTO getMortgage(@PathVariable("mortgageId") final int mortgageId) {
         return this.mortgageService.getMortgageById(mortgageId)
                 .orElseThrow(() -> new NoSuchElementException(MORTGAGE_NOT_FOUND_MESSAGE.formatted(mortgageId)));
     }
@@ -46,7 +46,7 @@ public final class MortgageController {
     }
 
     @PutMapping("/edit")
-    public String updateMortgage(@ModelAttribute(value = "mortgage", binding = false) final Mortgage mortgage,
+    public String updateMortgage(@ModelAttribute(value = "mortgage", binding = false) final MortgageDTO mortgage,
                                  @ModelAttribute("mortgagePayload") final UpdateMortgagePayload payload,
                                  final BindingResult bindingResult,
                                  final Model model) {
@@ -62,10 +62,10 @@ public final class MortgageController {
                     payload.mortgageTerm(),
                     payload.amount(),
                     payload.currentAmount(),
-                    mortgage.getId()
+                    mortgage.id()
             );
             if (isUpdated) {
-                return "redirect:/mortgages/%d".formatted(mortgage.getId());
+                return "redirect:/mortgages/%d".formatted(mortgage.id());
             } else {
                 final ObjectError error = new ObjectError("mortgagePayload", "user with this passport number does not exist");
                 model.addAttribute("errors",error);
@@ -76,8 +76,8 @@ public final class MortgageController {
     }
 
     @DeleteMapping("/delete")
-    public String deleteMortgage(@ModelAttribute(value = "mortgage", binding = false) final Mortgage mortgage) {
-        this.mortgageService.deleteMortgage(mortgage.getId());
+    public String deleteMortgage(@ModelAttribute(value = "mortgage", binding = false) final MortgageDTO mortgage) {
+        this.mortgageService.deleteMortgage(mortgage.id());
 
         return "redirect:/mortgages/list";
     }

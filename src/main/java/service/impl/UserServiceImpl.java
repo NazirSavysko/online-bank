@@ -1,8 +1,10 @@
 package service.impl;
 
 import dao.UserDAO;
+import dto.UserDTO;
 import entity.User;
 import entity.enums.Gender;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import service.UserService;
@@ -22,28 +24,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userDAO.getAllUsers();
     }
 
     @Override
-    public Optional<User> getUserById(final int id) {
+    public Optional<UserDTO> getUserById(final int id) {
         return userDAO.getUserById(id);
     }
 
     @Override
-    public User saveUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
+    public UserDTO saveUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
         if (this.userDAO.isPassportNumberAvailable(passportNumber)) {
             final User user = new User(0, userName, gender, dataOfBirth, passportNumber);
             return userDAO.saveUser(user);
         } else {
-            throw new IllegalArgumentException("User with passport number '%s' already exists".formatted(passportNumber));
+            throw new IllegalArgumentException("UserDTO with passport number '%s' already exists".formatted(passportNumber));
         }
     }
 
-
     @Override
-    public boolean updateUser(final String passportNumber, final String pastPassportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
+    public boolean updateUser(final @NotNull String passportNumber, final String pastPassportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
         if (passportNumber.equals(pastPassportNumber) || this.userDAO.isPassportNumberAvailable(passportNumber)) {
             final User user = new User(id, userName, gender, dataOfBirth, passportNumber);
             return userDAO.updateUser(user);

@@ -1,7 +1,7 @@
 package controller.debit_card;
 
 import controller.payload.debit_card.UpdateDebitCardPayload;
-import entity.DebitCard;
+import dto.DebitCardDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -30,7 +30,7 @@ public final class DebitCardController {
     }
 
     @ModelAttribute("debitCard")
-    public DebitCard getDebitCard(@PathVariable("cardId") int id) {
+    public DebitCardDTO getDebitCard(@PathVariable("cardId") int id) {
         return debitCardService.getDebitCardById(id)
                 .orElseThrow(() -> new NoSuchElementException("Debit card with number '%d' not found".formatted(id)));
     }
@@ -47,7 +47,7 @@ public final class DebitCardController {
 
     @PutMapping("/edit")
     public String updateDebitCard(
-            @ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard,
+            @ModelAttribute(value = "debitCard", binding = false) final DebitCardDTO debitCard,
             @Valid @ModelAttribute("debitCardPayload") final UpdateDebitCardPayload payload,
             final BindingResult bindingResult,
             final Model model) {
@@ -60,9 +60,9 @@ public final class DebitCardController {
         } else {
             try {
                 debitCardService.updateDebitCard(
-                        debitCard.getId(),
+                        debitCard.id(),
                         payload.cardHolderPassportNumber(),
-                        debitCard.getCardNumber(),
+                        debitCard.cardNumber(),
                         payload.cardNumber(),
                         payload.cvv(),
                         payload.balance(),
@@ -70,7 +70,7 @@ public final class DebitCardController {
                         payload.issueDate()
                 );
 
-                return "redirect:/debit-cards/%d".formatted(debitCard.getId());
+                return "redirect:/debit-cards/%d".formatted(debitCard.id());
             } catch (IllegalArgumentException e) {
                 ObjectError error = new ObjectError("debitCardPayload", e.getMessage());
                 model.addAttribute("errors", error);
@@ -81,8 +81,8 @@ public final class DebitCardController {
     }
 
     @DeleteMapping("/delete")
-    public String deleteDebitCard(@ModelAttribute(value = "debitCard", binding = false) final DebitCard debitCard) {
-        debitCardService.deleteDebitCard(debitCard.getId());
+    public String deleteDebitCard(@ModelAttribute(value = "debitCard", binding = false) final DebitCardDTO debitCard) {
+        debitCardService.deleteDebitCard(debitCard.id());
 
         return "redirect:/debit-cards/list";
     }
