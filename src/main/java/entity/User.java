@@ -2,20 +2,21 @@ package entity;
 
 import entity.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static lombok.AccessLevel.PROTECTED;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
+@Setter
+@Builder
 @Entity
 @Table(name = "bank_user")
 public final class User {
@@ -36,4 +37,16 @@ public final class User {
 
     @Column(name = "passport_number")
     private  String passportNumber;
+
+    @OneToMany(mappedBy = "creditHolder",
+            cascade = {REMOVE})
+    private List<AutoLoan> accounts;
+
+    @OneToMany(mappedBy = "cardHolder",
+            cascade = {REMOVE})
+    private List<DebitCard> creditCards;
+
+    @OneToMany(mappedBy = "mortgageHolder",
+            cascade = {REMOVE})
+    private List<Mortgage> debitCards;
 }

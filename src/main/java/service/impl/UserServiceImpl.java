@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -36,7 +37,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO saveUser(final String passportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth) {
         if (this.userDAO.isPassportNumberAvailable(passportNumber)) {
-            final User user = new User(0, userName, gender, dataOfBirth, passportNumber);
+            final User user = User.builder()
+                    .userName(userName)
+                    .gender(gender)
+                    .passportNumber(passportNumber)
+                    .dateOfBirth(dataOfBirth)
+                    .build();
             return userDAO.saveUser(user);
         } else {
             throw new IllegalArgumentException("UserDTO with passport number '%s' already exists".formatted(passportNumber));
@@ -46,7 +52,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean updateUser(final @NotNull String passportNumber, final String pastPassportNumber, final String userName, final Gender gender, final LocalDate dataOfBirth, final long id) {
         if (passportNumber.equals(pastPassportNumber) || this.userDAO.isPassportNumberAvailable(passportNumber)) {
-            final User user = new User(id, userName, gender, dataOfBirth, passportNumber);
+            final User user = User.builder()
+                    .id(id)
+                    .userName(userName)
+                    .gender(gender)
+                    .passportNumber(passportNumber)
+                    .dateOfBirth(dataOfBirth)
+                    .build();
             return userDAO.updateUser(user);
         } else {
             return false;
