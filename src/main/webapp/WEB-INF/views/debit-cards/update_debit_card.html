@@ -12,7 +12,7 @@
         <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
     </ul>
 </div>
-<form method="post" data-th-action="@{/debit-cards/{debitCardId}/edit(debitCardId=${debitCard?.getId})}">
+<form method="post" data-th-action="@{/debit-cards/{debitCardId}/edit(debitCardId=${debitCard?.id})}">
     <input type="hidden" name="_method" value="put">
     <label>
         Passport Number:<br>
@@ -52,7 +52,7 @@
                name="balance"
                step="0.01"
                min="0"
-               data-th-value="${debitCardPayload != null ? debitCardPayload.balance : debitCard.balance}"/>
+               data-th-value="${debitCardPayload != null ? debitCardPayload?.balance : debitCard?.balance}"/>
     </label><br>
 
     <button type="submit">Update</button>
