@@ -49,6 +49,7 @@ public final class MortgagesController {
             final Model model
     ) {
         this.mortgageValidator.validate(payload, bindingResult);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
 

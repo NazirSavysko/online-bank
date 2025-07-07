@@ -20,4 +20,7 @@ public interface AutoLoanService {
 
     @Transactional(rollbackFor = Exception.class)
     void deleteAutoLoan(int autoLoanId);
+
+    @Transactional(rollbackFor = Exception.class)
+    void payAutoLoan(int id,BigDecimal amount);
 }

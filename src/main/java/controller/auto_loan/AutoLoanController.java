@@ -1,5 +1,6 @@
 package controller.auto_loan;
 
+import controller.payload.auto_loan.PaymentAutoLoanPayload;
 import controller.payload.auto_loan.UpdateAutoLoanPayload;
 import dto.AutoLoanDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ public final class AutoLoanController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "auto-loans/update_auto_loan";
         } else {
             final boolean updatedAutoLoan = this.autoLoanService.updateAutoLoan(
@@ -85,5 +87,35 @@ public final class AutoLoanController {
         this.autoLoanService.deleteAutoLoan(autoLoan.id());
 
         return "redirect:/auto-loans/list";
+    }
+
+    @GetMapping("/payment")
+    public String getPayAutoLoanPage() {
+        return "auto-loans/payment";
+    }
+
+    @PostMapping("/payment")
+    public String payAutoLoan(
+            @ModelAttribute("paymentPayload") final PaymentAutoLoanPayload paymentPayload,
+            final BindingResult bindingResult,
+            final Model model) {
+        this.autoLoanValidator.validate(paymentPayload, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+
+            return "auto-loans/payment";
+        } else {
+            try {
+                this.autoLoanService.payAutoLoan(paymentPayload.id(), paymentPayload.amount());
+
+                return "redirect:/auto-loans/list";
+            } catch (final IllegalArgumentException e) {
+                ObjectError error = new ObjectError("paymentPayload", e.getMessage());
+                model.addAttribute("errors", error);
+
+                return "auto-loans/payment";
+            }
+        }
     }
 }

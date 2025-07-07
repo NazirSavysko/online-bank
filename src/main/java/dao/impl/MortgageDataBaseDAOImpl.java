@@ -71,6 +71,14 @@ public final class MortgageDataBaseDAOImpl implements MortgageDAO {
         entityManager.remove(mortgage);
     }
 
+    @Override
+    public int getMortgageCountByUserPassportNumber(final String holderPassport) {
+        return entityManager.createQuery("SELECT COUNT(m) FROM Mortgage m WHERE m.mortgageHolder.passportNumber = :passportNumber", Long.class)
+                .setParameter("passportNumber", holderPassport)
+                .getSingleResult()
+                .intValue();
+    }
+
 
     @Contract("_ -> new")
     private @NotNull MortgageDTO mapToMortgageDTO(final @NotNull Mortgage mortgage) {

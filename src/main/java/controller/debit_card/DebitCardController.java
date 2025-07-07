@@ -1,5 +1,6 @@
 package controller.debit_card;
 
+import controller.payload.debit_card.DepositPayload;
 import controller.payload.debit_card.UpdateDebitCardPayload;
 import dto.DebitCardDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,5 +86,37 @@ public final class DebitCardController {
         debitCardService.deleteDebitCard(debitCard.id());
 
         return "redirect:/debit-cards/list";
+    }
+
+    @GetMapping("/deposit")
+    public String getDepositPage() {
+        return "debit-cards/deposit";
+    }
+
+    @PostMapping("/deposit")
+    public String depositMoney(
+            @Valid @ModelAttribute("depositPayload") final DepositPayload depositPayload,
+            final BindingResult bindingResult,
+            final Model model) {
+        debitCardValidator.validate(depositPayload, bindingResult);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+
+            return "debit-cards/deposit";
+        } else {
+            try {
+                debitCardService.depositMoney(
+                        depositPayload.cardNumber(),
+                        depositPayload.amount()
+                );
+
+                return "redirect:/debit-cards/list";
+            } catch (IllegalArgumentException e) {
+                ObjectError error = new ObjectError("depositPayload", e.getMessage());
+                model.addAttribute("errors", error);
+
+                return "debit-cards/deposit";
+            }
+        }
     }
 }

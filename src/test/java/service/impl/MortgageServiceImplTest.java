@@ -1,5 +1,6 @@
 package service.impl;
 
+import dao.AutoLoanDAO;
 import dao.MortgageDAO;
 import dao.UserDAO;
 import dto.MortgageDTO;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static entity.enums.Mortgage_Term.TWENTY_YEARS;
@@ -27,6 +29,9 @@ class MortgageServiceImplTest {
 
     @Mock
     private UserDAO userDAO;
+
+    @Mock
+    private AutoLoanDAO autoLoanDAO;
 
     @InjectMocks
     private MortgageServiceImpl mortgageServiceImpl;
@@ -91,6 +96,26 @@ class MortgageServiceImplTest {
         verify(mortgageDAO, never()).saveMortgage(any());
     }
 
+    @Test
+    void saveMortgage_whenUserHasThreeLoansAndMortgages_shouldThrowException() {
+        // Given
+        final String passport = "AA123456";
+        final BigDecimal amount = new BigDecimal("150000");
+        final BigDecimal currentAmount = new BigDecimal("50000");
+
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(false);
+        when(mortgageDAO.getMortgageCountByUserPassportNumber(passport)).thenReturn(2);
+        when(autoLoanDAO.getAutoLoanCountByUserPassportNumber(passport)).thenReturn(1);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> mortgageServiceImpl.saveMortgage(passport, TWENTY_YEARS, amount, currentAmount)
+        );
+
+        // Then
+        assertEquals("UserDTO with passport number 'AA123456' has enough mortgages and auto loans", exception.getMessage());
+    }
     @Test
     void getMortgageById_givenExistingId_shouldReturnMortgage() {
         // Given
@@ -171,5 +196,59 @@ class MortgageServiceImplTest {
 
         // Then
         verify(mortgageDAO).deleteMortgage(id);
+    }
+
+    @Test
+    void payMortgage_givenExistingMortgage_shouldUpdate() {
+        // Given
+        final int id = 1;
+        final BigDecimal paymentAmount = new BigDecimal("5000");
+        final MortgageDTO existingMortgage = mock(MortgageDTO.class);
+        when(existingMortgage.currentMortgageAmount()).thenReturn(new BigDecimal("10000"));
+        when(mortgageDAO.getMortgageById(id)).thenReturn(Optional.of(existingMortgage));
+
+        // When
+        mortgageServiceImpl.payMortgage(id, paymentAmount);
+
+        // Then
+        verify(mortgageDAO).getMortgageById(id);
+        verify(mortgageDAO).updateMortgage(any(Mortgage.class));
+    }
+
+    @Test
+    void payMortgage_givenMortgagePaidOff_shouldDelete() {
+        // Given
+        final int id = 1;
+        final BigDecimal paymentAmount = new BigDecimal("10000");
+        final MortgageDTO existingMortgage = mock(MortgageDTO.class);
+        when(existingMortgage.currentMortgageAmount()).thenReturn(new BigDecimal("10000"));
+        when(mortgageDAO.getMortgageById(id)).thenReturn(Optional.of(existingMortgage));
+
+        // When
+        mortgageServiceImpl.payMortgage(id, paymentAmount);
+
+        // Then
+        verify(mortgageDAO).getMortgageById(id);
+        verify(mortgageDAO).deleteMortgage(id);
+    }
+
+    @Test
+    void payMortgage_givenNonExistingMortgage_shouldThrowException() {
+        // Given
+        final int id = 1;
+        final BigDecimal paymentAmount = new BigDecimal("5000");
+
+        when(mortgageDAO.getMortgageById(id)).thenReturn(Optional.empty());
+
+        // When
+        final NoSuchElementException exception = assertThrows(
+                NoSuchElementException.class,
+                () -> mortgageServiceImpl.payMortgage(id, paymentAmount)
+        );
+
+        // Then
+        assertEquals("Mortgage with ID 1 not found.", exception.getMessage());
+        verify(mortgageDAO).getMortgageById(id);
+        verify(mortgageDAO, never()).updateMortgage(any());
     }
 }

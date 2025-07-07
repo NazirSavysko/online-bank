@@ -72,6 +72,15 @@ public final class AutoLoanDataBaseDAOImpl implements AutoLoanDAO {
         return true;
     }
 
+    @Override
+    public int getAutoLoanCountByUserPassportNumber(final String holderPassport) {
+        return entityManager.createQuery(
+                "SELECT COUNT(a) FROM AutoLoan a WHERE a.creditHolder.passportNumber = :passportNumber", Long.class)
+                .setParameter("passportNumber", holderPassport)
+                .getSingleResult()
+                .intValue();
+    }
+
     @Contract("_ -> new")
     private @NotNull AutoLoanDTO mapToAutoLoanDTO(final @NotNull AutoLoan autoLoan) {
         return new AutoLoanDTO(

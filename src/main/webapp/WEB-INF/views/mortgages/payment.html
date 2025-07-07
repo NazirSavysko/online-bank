@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment</title>
+</head>
+<body>
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+<h1>Payment Information</h1>
+<form method="post" data-th-action="@{/mortgages/{mortgageId}/payment(mortgageId=${mortgage?.id})}">
+    <label hidden="hidden">
+        <input type="number" name="id" data-th-value="${mortgage.id}">
+    </label><br>
+
+    <label for="amount">
+        Amount to pay:<br>
+        <input type="number" min="1" name="amount" id="amount" step="0.01" data-th-value="${paymentPayload?.amount}">
+    </label><br>
+
+    <button type="submit">Pay</button>
+    <br>
+    <a href="/auto-loans/list">
+        <button type="button">Go back</button>
+    </a>
+</form>
+</body>
+</html>

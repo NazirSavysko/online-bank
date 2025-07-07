@@ -16,6 +16,7 @@
         <th>Term</th>
         <th>Updating mortgage</th>
         <th>Deleting mortgage</th>
+        <th>Mortgage Payment</th>
     </tr>
     </thead>
     <tbody>
@@ -34,6 +35,12 @@
                 <input type="hidden" name="_method" value="delete">
                 <button type="submit">Delete</button>
             </form>
+        </td>
+        <td>
+            <a th:href="@{/mortgages/{mortgageId}/payment(mortgageId=${mortgage.id})}">
+                <button>Pay</button>
+            </a>
+        </td>
     </tr>
     </tbody>
 </table>

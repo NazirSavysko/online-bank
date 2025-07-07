@@ -16,4 +16,6 @@ public interface MortgageDAO {
     boolean updateMortgage(final Mortgage mortgage);
 
     void deleteMortgage(int id);
+
+    int getMortgageCountByUserPassportNumber(String holderPassport);
 }

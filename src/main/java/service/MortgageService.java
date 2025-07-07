@@ -21,4 +21,7 @@ public interface MortgageService {
 
     @Transactional(rollbackFor = Exception.class)
     void deleteMortgage(int id);
+
+    @Transactional(rollbackFor = Exception.class)
+    void payMortgage( int id, BigDecimal amount);
 }

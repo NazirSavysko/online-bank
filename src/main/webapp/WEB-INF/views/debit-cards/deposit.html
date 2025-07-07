@@ -12,19 +12,22 @@
 </div>
 <body>
 <h1>Transfer</h1>
-<form action="/debit-cards/transfer" method="post">
+<form method="post" data-th-action="@{/debit-cards/{debitCardId}/deposit(debitCardId=${debitCard?.id})}">
     <label>
         The card number<br>
         <input type="text" name="cardNumber"
-               data-th-value="${debitCard?.cardNumber}">
+               data-th-value="${debitCard != null ? debitCard.cardNumber : depositPayload?.cardNumber}">
     </label><br>
     <label>
         Amount :<br>
         <input type="number" name="amount"
-               data-th-value="${debitCard?.amount}" min="0" step="0.01">
+               data-th-value="${depositPayload?.amount}" min="0" step="0.01">
     </label><br>
     <button type="submit">Transfer</button>
     <br>
+    <a href="/debit-cards/list">
+        <button type="button">Go back</button>
+    </a>
 </form>
 </body>
 </html>

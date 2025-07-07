@@ -18,6 +18,7 @@
         <th>Issue Date</th>
         <th>Updating debit card</th>
         <th>Deleting debit card</th>
+        <th>Card Deposit</th>
     </tr>
     </thead>
     <tbody>
@@ -38,6 +39,12 @@
                 <button type="submit">Delete</button>
                 <input type="hidden" name="_method" value="delete">
             </form>
+        </td>
+        <td>
+            <a data-th-href="@{/debit-cards/{debitCardId}/deposit(debitCardId=${card.id})}">
+                <button>Deposit</button>
+            </a>
+        </td>
     </tr>
     </tbody>
 </table>

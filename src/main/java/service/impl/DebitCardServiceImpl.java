@@ -47,8 +47,8 @@ public class DebitCardServiceImpl implements DebitCardService {
         }
         final User user = this.userDAO.getUserByPassportNumber(holderPassportNumber);
         final DebitCard debitCard = new DebitCard(0, cardNumber, user, expirationDate, issueDate, cvv, balance);
-        return debitCardDAO.saveDebitCard(debitCard);
 
+        return debitCardDAO.saveDebitCard(debitCard);
     }
 
     @Override

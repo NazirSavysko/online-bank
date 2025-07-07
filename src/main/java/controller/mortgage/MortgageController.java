@@ -1,5 +1,6 @@
 package controller.mortgage;
 
+import controller.payload.mortgage.PaymentMortgagePayload;
 import controller.payload.mortgage.UpdateMortgagePayload;
 import dto.MortgageDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,38 @@ public final class MortgageController {
         this.mortgageService.deleteMortgage(mortgage.id());
 
         return "redirect:/mortgages/list";
+    }
+
+    @GetMapping("/payment")
+    public String getMortgagePaymentPage() {
+        return "mortgages/payment";
+    }
+
+    @PostMapping("/payment")
+    public String payMortgage(@ModelAttribute("paymentPayload") final PaymentMortgagePayload payload,
+                              final BindingResult bindingResult,
+                              final Model model) {
+        this.mortgageValidator.validate(payload, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+
+            return "mortgages/payment";
+        } else {
+            try {
+                this.mortgageService.payMortgage(
+                        payload.id(),
+                        payload.amount()
+                );
+
+                return "redirect:/mortgages/list";
+            } catch (IllegalArgumentException e) {
+                ObjectError error = new ObjectError("paymentPayload", e.getMessage());
+                model.addAttribute("errors", error);
+
+                return "mortgages/payment";
+            }
+        }
     }
 
 }

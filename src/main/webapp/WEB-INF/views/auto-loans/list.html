@@ -16,6 +16,7 @@
         <th>Term (months)</th>
         <th>Updating auto loan</th>
         <th>Deleting auto loan</th>
+        <th>Auto Loan Payment</th>
     </tr>
     </thead>
     <tbody>
@@ -35,6 +36,11 @@
                 <button type="submit">delete</button>
                 <input type="hidden" name="_method" value="delete">
             </form>
+        </td>
+        <td>
+            <a data-th-href="@{/auto-loans/{autoLoanId}/payment(autoLoanId=${loan.id})}">
+                <button>Pay</button>
+            </a>
         </td>
     </tr>
     </tbody>

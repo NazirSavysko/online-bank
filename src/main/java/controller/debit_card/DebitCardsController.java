@@ -1,6 +1,5 @@
 package controller.debit_card;
 
-import controller.payload.debit_card.DepositPayload;
 import controller.payload.debit_card.NewDebitCardPayload;
 import controller.payload.debit_card.TransferPayload;
 import dto.DebitCardDTO;
@@ -50,6 +49,7 @@ public final class DebitCardsController {
                                   final BindingResult bindingResult,
                                   final Model model) {
         this.debitCardValidator.validate(payload, bindingResult);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "debit-cards/new_debit_card";
@@ -85,8 +85,10 @@ public final class DebitCardsController {
             final BindingResult bindingResult,
             final Model model) {
         debitCardValidator.validate(transferPayload, bindingResult);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "debit-cards/transfer";
         }else {
             try {
@@ -95,40 +97,13 @@ public final class DebitCardsController {
                         transferPayload.toCardNumber(),
                         transferPayload.amount()
                 );
+
                 return "redirect:/debit-cards/list";
             } catch (IllegalArgumentException e) {
                 ObjectError error = new ObjectError("transferPayload", e.getMessage());
                 model.addAttribute("errors", error);
+
                 return "debit-cards/transfer";
-            }
-        }
-    }
-
-    @GetMapping("/deposit")
-    public String getDepositPage() {
-        return "debit-cards/deposit";
-    }
-
-    @PostMapping("/deposit")
-    public String depositMoney(
-            @Valid @ModelAttribute("depositPayload") final DepositPayload depositPayload,
-            final BindingResult bindingResult,
-            final Model model) {
-        debitCardValidator.validate(depositPayload, bindingResult);
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("errors", bindingResult.getAllErrors());
-            return "debit-cards/deposit";
-        } else {
-            try {
-                debitCardService.depositMoney(
-                        depositPayload.cardNumber(),
-                        depositPayload.amount()
-                );
-                return "redirect:/debit-cards/list";
-            } catch (IllegalArgumentException e) {
-                ObjectError error = new ObjectError("depositPayload", e.getMessage());
-                model.addAttribute("errors", error);
-                return "debit-cards/deposit";
             }
         }
     }

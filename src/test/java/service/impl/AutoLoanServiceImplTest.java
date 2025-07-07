@@ -1,6 +1,7 @@
 package service.impl;
 
 import dao.AutoLoanDAO;
+import dao.MortgageDAO;
 import dao.UserDAO;
 import dto.AutoLoanDTO;
 import entity.AutoLoan;
@@ -25,6 +26,9 @@ class AutoLoanServiceImplTest {
 
     @Mock
     private UserDAO userDAO;
+
+    @Mock
+    private MortgageDAO mortgageDAO;
 
     @InjectMocks
     private AutoLoanServiceImpl autoLoanServiceImpl;
@@ -67,6 +71,30 @@ class AutoLoanServiceImplTest {
         verify(userDAO).isPassportNumberAvailable(passport);
         verify(autoLoanDAO).saveAutoLoan(any(AutoLoan.class));
     }
+
+    @Test
+    void saveAutoLoan_whenUserHasThreeLoansAndMortgages_shouldThrowException() {
+        // Given
+        final String passport = "AA123456";
+        final BigDecimal amount = new BigDecimal("10000");
+        final BigDecimal currentAmount = new BigDecimal("5000");
+        final int term = 12;
+
+
+        when(userDAO.isPassportNumberAvailable(passport)).thenReturn(false);
+        when(autoLoanDAO.getAutoLoanCountByUserPassportNumber(passport)).thenReturn(2);
+        when(mortgageDAO.getMortgageCountByUserPassportNumber(passport)).thenReturn(1);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> autoLoanServiceImpl.saveAutoLoan(passport, amount, currentAmount, term)
+        );
+
+        // Then
+        assertEquals("User with passport number 'AA123456' has enough mortgages and auto loans", exception.getMessage());
+    }
+
 
     @Test
     void saveAutoLoan_givenNonExistentUser_shouldThrowException() {
@@ -172,5 +200,57 @@ class AutoLoanServiceImplTest {
 
         // Then
         verify(autoLoanDAO).deleteAutoLoan(autoLoanId);
+    }
+
+    @Test
+    void payAutoLoan_givenExistingLoan_shouldDelete() {
+        // Given
+        final int autoLoanId = 1;
+        final BigDecimal paymentAmount = new BigDecimal("5000");
+        final AutoLoanDTO existingLoan = new AutoLoanDTO(autoLoanId, new BigDecimal("10000"), new BigDecimal("5000"), 12, "AA123456");
+
+        when(autoLoanDAO.getAutoLoanById(autoLoanId)).thenReturn(Optional.of(existingLoan));
+
+        // When
+        autoLoanServiceImpl.payAutoLoan(autoLoanId, paymentAmount);
+
+        // Then
+        verify(autoLoanDAO).getAutoLoanById(autoLoanId);
+        verify(autoLoanDAO).deleteAutoLoan(autoLoanId);
+    }
+
+    @Test
+    void payAutoLoan_givenNonExistingLoan_shouldNotUpdateOrDelete() {
+        // Given
+        final int autoLoanId = 1;
+        final BigDecimal paymentAmount = new BigDecimal("5000");
+
+        when(autoLoanDAO.getAutoLoanById(autoLoanId)).thenReturn(Optional.empty());
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> autoLoanServiceImpl.payAutoLoan(autoLoanId, paymentAmount)
+        );
+
+        // Then
+        assertEquals("Auto loan with id '1' does not exist", exception.getMessage());
+    }
+
+    @Test
+    void payAutoLoan_givenExistingLoanWithRemainingAmount_shouldUpdateCurrentAmount() {
+        // Given
+        final int autoLoanId = 1;
+        final BigDecimal paymentAmount = new BigDecimal("2000");
+        final AutoLoanDTO existingLoan = new AutoLoanDTO(autoLoanId, new BigDecimal("10000"), new BigDecimal("5000"), 12, "AA123456");
+
+        when(autoLoanDAO.getAutoLoanById(autoLoanId)).thenReturn(Optional.of(existingLoan));
+
+        // When
+        autoLoanServiceImpl.payAutoLoan(autoLoanId, paymentAmount);
+
+        // Then
+        verify(autoLoanDAO).getAutoLoanById(autoLoanId);
+        verify(autoLoanDAO).updateAutoLoan(any(AutoLoan.class));
     }
 }

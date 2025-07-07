@@ -227,4 +227,136 @@ class DebitCardServiceImplTest {
         // Then
         verify(debitCardDAO).deleteDebitCard(id);
     }
+
+    @Test
+    void depositMoney_shouldCallDaoDeposit() {
+        // Given
+        final String cardNumber = "1111222233334444";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        when(debitCardDAO.isCardNumberAvailable(cardNumber)).thenReturn(false);
+        when(debitCardDAO.getDebitCardByCardNumber(anyString())).thenReturn(new DebitCard(1, cardNumber, null, LocalDate.now(), LocalDate.now(), "123", BigDecimal.ZERO));
+
+        // When
+        debitCardServiceImpl.depositMoney(cardNumber, amount);
+
+        // Then
+        verify(debitCardDAO).updateDebitCard(any(DebitCard.class));
+    }
+
+    @Test
+    void depositMoney_shouldThrowException() {
+        // Given
+        final String cardNumber = "1111222233334444";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        when(debitCardDAO.isCardNumberAvailable(cardNumber)).thenReturn(true);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.depositMoney(cardNumber, amount)
+        );
+
+        // Then
+        assertEquals("Card number 1111222233334444 does not exist.", exception.getMessage());
+        verify(debitCardDAO).isCardNumberAvailable(cardNumber);
+    }
+
+    @Test
+    void transferMoney_whenCardNumberIsEqual_shouldThrowException() {
+        // Given
+        final String fromCardNumber = "1111222233334444";
+        final String toCardNumber = "1111222233334444";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.transferMoney(fromCardNumber, toCardNumber, amount)
+        );
+
+        // Then
+        assertEquals("Cannot transfer money to the same card: 1111222233334444", exception.getMessage());
+    }
+
+    @Test
+    void transferMoney_whenFirstCardNumberAvailable_shouldTrowException() {
+        // Given
+        final String fromCardNumber = "1111222233334444";
+        final String toCardNumber = "2222333344445555";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        when(debitCardDAO.isCardNumberAvailable(fromCardNumber)).thenReturn(true);
+        when(debitCardDAO.isCardNumberAvailable(toCardNumber)).thenReturn(false);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.transferMoney(fromCardNumber, toCardNumber, amount)
+        );
+
+        // Then
+        assertEquals("Card number 1111222233334444 does not exist.", exception.getMessage());
+    }
+
+    @Test
+    void transferMoney_whenSecondCardNumberAvailable_shouldThrowException() {
+        // Given
+        final String fromCardNumber = "1111222233334444";
+        final String toCardNumber = "2222333344445555";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        when(debitCardDAO.isCardNumberAvailable(toCardNumber)).thenReturn(true);
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.transferMoney(fromCardNumber, toCardNumber, amount)
+        );
+
+        // Then
+        assertEquals("Card number 2222333344445555 does not exist.", exception.getMessage());
+    }
+
+    @Test
+    void transferMoney_whenBothCardNumbersAvailable_shouldTransferSuccessfully() {
+        // Given
+        final String fromCardNumber = "1111222233334444";
+        final String toCardNumber = "2222333344445555";
+        final BigDecimal amount = new BigDecimal("100.00");
+
+        when(debitCardDAO.isCardNumberAvailable(fromCardNumber)).thenReturn(false);
+        when(debitCardDAO.isCardNumberAvailable(toCardNumber)).thenReturn(false);
+        when(debitCardDAO.getDebitCardByCardNumber(fromCardNumber)).thenReturn(new DebitCard(1, fromCardNumber, null, LocalDate.now(), LocalDate.now(), "123", new BigDecimal("500.00")));
+        when(debitCardDAO.getDebitCardByCardNumber(toCardNumber)).thenReturn(new DebitCard(2, toCardNumber, null, LocalDate.now(), LocalDate.now(), "456", new BigDecimal("200.00")));
+
+        // When
+        debitCardServiceImpl.transferMoney(fromCardNumber, toCardNumber, amount);
+
+        // Then
+        verify(debitCardDAO, times(2)).updateDebitCard(any(DebitCard.class));
+    }
+
+    @Test
+    void transferMoney_whenBothCardNumbersAvailable_shouldThrowException() {
+        // Given
+        final String fromCardNumber = "1111222233334444";
+        final String toCardNumber = "2222333344445555";
+        final BigDecimal amount = new BigDecimal("600.00");
+
+        when(debitCardDAO.isCardNumberAvailable(fromCardNumber)).thenReturn(false);
+        when(debitCardDAO.isCardNumberAvailable(toCardNumber)).thenReturn(false);
+        when(debitCardDAO.getDebitCardByCardNumber(fromCardNumber)).thenReturn(new DebitCard(1, fromCardNumber, null, LocalDate.now(), LocalDate.now(), "123", new BigDecimal("500.00")));
+        when(debitCardDAO.getDebitCardByCardNumber(toCardNumber)).thenReturn(new DebitCard(2, toCardNumber, null, LocalDate.now(), LocalDate.now(), "456", new BigDecimal("200.00")));
+
+        // When
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> debitCardServiceImpl.transferMoney(fromCardNumber, toCardNumber, amount)
+        );
+
+        // Then
+        assertEquals("Insufficient funds on card 1111222233334444", exception.getMessage());
+    }
 }

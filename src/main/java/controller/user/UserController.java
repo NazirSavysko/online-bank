@@ -57,6 +57,7 @@ public class UserController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
+
             return "users/update_user";
         } else {
             final boolean isUpdated = this.userService.updateUser(

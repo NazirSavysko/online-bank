@@ -1,6 +1,7 @@
 package service.impl;
 
 import dao.AutoLoanDAO;
+import dao.MortgageDAO;
 import dao.UserDAO;
 import dto.AutoLoanDTO;
 import entity.AutoLoan;
@@ -13,17 +14,22 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import static java.math.BigDecimal.ZERO;
+
 @Service
 public class AutoLoanServiceImpl implements AutoLoanService {
 
     private final AutoLoanDAO autoLoanDAO;
     private final UserDAO userDAO;
+    private final MortgageDAO mortgageDAO;
 
 
     @Autowired
-    public AutoLoanServiceImpl(final AutoLoanDAO autoLoanDAO, final UserDAO userDAO) {
+    public AutoLoanServiceImpl(final AutoLoanDAO autoLoanDAO, final UserDAO userDAO,
+                               final MortgageDAO mortgageDAO) {
         this.autoLoanDAO = autoLoanDAO;
         this.userDAO = userDAO;
+        this.mortgageDAO = mortgageDAO;
     }
 
     @Override
@@ -37,10 +43,17 @@ public class AutoLoanServiceImpl implements AutoLoanService {
                                     final BigDecimal currentAmount,
                                     final int termInMonths) {
         if (!this.userDAO.isPassportNumberAvailable(userPassportNumber)) {
-            final User user = this.userDAO.getUserByPassportNumber(userPassportNumber);
-            final AutoLoan autoLoan = new AutoLoan(0, amount, currentAmount, termInMonths, user);
+            final int mortgageCount = this.mortgageDAO.getMortgageCountByUserPassportNumber(userPassportNumber);
+            final int autoLoanCount = this.autoLoanDAO.getAutoLoanCountByUserPassportNumber(userPassportNumber);
 
-            return this.autoLoanDAO.saveAutoLoan(autoLoan);
+            if ((mortgageCount + autoLoanCount) < 3) {
+                final User user = this.userDAO.getUserByPassportNumber(userPassportNumber);
+                final AutoLoan autoLoan = new AutoLoan(0, amount, currentAmount, termInMonths, user);
+
+                return this.autoLoanDAO.saveAutoLoan(autoLoan);
+            } else {
+                throw new IllegalArgumentException("User with passport number '%s' has enough mortgages and auto loans".formatted(userPassportNumber));
+            }
         } else {
             throw new IllegalArgumentException("UserDTO with passport number '%s' does not exist".formatted(userPassportNumber));
         }
@@ -70,5 +83,31 @@ public class AutoLoanServiceImpl implements AutoLoanService {
     @Override
     public void deleteAutoLoan(final int autoLoanId) {
         this.autoLoanDAO.deleteAutoLoan(autoLoanId);
+    }
+
+    @Override
+    public void payAutoLoan(final int id, final BigDecimal amount) {
+        final Optional<AutoLoanDTO> autoLoan = this.autoLoanDAO.getAutoLoanById(id);
+        if (autoLoan.isPresent()) {
+            final AutoLoanDTO autoLoanDTO = autoLoan.get();
+            final BigDecimal currentAmount = autoLoanDTO.currentCreditAmount().subtract(amount);
+
+            if (currentAmount.compareTo(ZERO) <= 0) {
+                this.autoLoanDAO.deleteAutoLoan(id);
+            } else {
+                final User user = this.userDAO.getUserByPassportNumber(autoLoanDTO.creditHolderPassportNumber());
+                final AutoLoan autoLoanUpdate = new AutoLoan(
+                        autoLoanDTO.id(),
+                        autoLoanDTO.creditAmount(),
+                        currentAmount,
+                        autoLoanDTO.creditTermInMonths(),
+                        user
+                );
+
+                this.autoLoanDAO.updateAutoLoan(autoLoanUpdate);
+            }
+        } else {
+            throw new IllegalArgumentException("Auto loan with id '%d' does not exist".formatted(id));
+        }
     }
 }

@@ -50,6 +50,7 @@ public final class UsersController {
                              final BindingResult bindingResult,
                              final Model model) {
         this.userValidator.validate(payload, bindingResult);
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
             return "users/new_user";

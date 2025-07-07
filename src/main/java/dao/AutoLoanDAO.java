@@ -16,4 +16,6 @@ public interface AutoLoanDAO {
     void deleteAutoLoan(int autoLoanId);
 
     boolean updateAutoLoan(AutoLoan autoLoan);
+
+    int getAutoLoanCountByUserPassportNumber(String holderPassport);
 }
