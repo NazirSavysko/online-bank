@@ -1,6 +1,8 @@
 package controller.debit_card;
 
+import controller.payload.debit_card.DepositPayload;
 import controller.payload.debit_card.NewDebitCardPayload;
+import controller.payload.debit_card.TransferPayload;
 import dto.DebitCardDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,6 +70,65 @@ public final class DebitCardsController {
                 model.addAttribute("errors", error);
 
                 return "debit-cards/new_debit_card";
+            }
+        }
+    }
+
+    @GetMapping("/transfer")
+    public String getTransferPage() {
+        return "debit-cards/transfer";
+    }
+
+    @PostMapping("/transfer")
+    public String transferMoney(
+            @ModelAttribute("transferPayload") final TransferPayload transferPayload,
+            final BindingResult bindingResult,
+            final Model model) {
+        debitCardValidator.validate(transferPayload, bindingResult);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            return "debit-cards/transfer";
+        }else {
+            try {
+                debitCardService.transferMoney(
+                        transferPayload.fromCardNumber(),
+                        transferPayload.toCardNumber(),
+                        transferPayload.amount()
+                );
+                return "redirect:/debit-cards/list";
+            } catch (IllegalArgumentException e) {
+                ObjectError error = new ObjectError("transferPayload", e.getMessage());
+                model.addAttribute("errors", error);
+                return "debit-cards/transfer";
+            }
+        }
+    }
+
+    @GetMapping("/deposit")
+    public String getDepositPage() {
+        return "debit-cards/deposit";
+    }
+
+    @PostMapping("/deposit")
+    public String depositMoney(
+            @Valid @ModelAttribute("depositPayload") final DepositPayload depositPayload,
+            final BindingResult bindingResult,
+            final Model model) {
+        debitCardValidator.validate(depositPayload, bindingResult);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            return "debit-cards/deposit";
+        } else {
+            try {
+                debitCardService.depositMoney(
+                        depositPayload.cardNumber(),
+                        depositPayload.amount()
+                );
+                return "redirect:/debit-cards/list";
+            } catch (IllegalArgumentException e) {
+                ObjectError error = new ObjectError("depositPayload", e.getMessage());
+                model.addAttribute("errors", error);
+                return "debit-cards/deposit";
             }
         }
     }

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transfer</title>
+</head>
+<div data-th-if="${errors}">
+    <h2>Validation Errors</h2>
+    <ul>
+        <li data-th-each="error : ${errors}" data-th-text="${error.getDefaultMessage()}"></li>
+    </ul>
+</div>
+<body>
+    <h1>Transfer</h1>
+    <form action="/debit-cards/transfer" method="post">
+        <label>
+            The card number from which the money is debited:<br>
+            <input type="text" name="fromCardNumber"
+                   data-th-value="${transferPayload?.fromCardNumber}">
+        </label><br>
+
+        <label>
+            The card number to which the money is credited:<br>
+            <input type="text" name="toCardNumber"
+                   data-th-value="${transferPayload?.toCardNumber}">
+        </label><br>
+        <label>
+            Amount :<br>
+            <input type="number" name="amount"
+                   data-th-value="${transferPayload?.amount}" min="0" step="0.01">
+        </label><br>
+        <button type="submit">Transfer</button>
+        <br>
+    </form>
+</body>
+</html>

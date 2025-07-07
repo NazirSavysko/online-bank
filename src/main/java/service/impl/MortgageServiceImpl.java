@@ -36,6 +36,7 @@ public class MortgageServiceImpl implements MortgageService {
         if (!userDAO.isPassportNumberAvailable(holderPassport)) {
             final User user = userDAO.getUserByPassportNumber(holderPassport);
             final Mortgage mortgage = new Mortgage(0, mortgageAmount, user,mortgageCurrentAmount, mortgageTerm);
+
             return mortgageDAO.saveMortgage(mortgage);
         }else {
             throw new IllegalArgumentException("UserDTO with passport number '%s' does not exist".formatted(holderPassport));
@@ -52,6 +53,7 @@ public class MortgageServiceImpl implements MortgageService {
         if(!userDAO.isPassportNumberAvailable(holderPassport)) {
             final User user = userDAO.getUserByPassportNumber(holderPassport);
             final Mortgage mortgage = new Mortgage(mortgageId, mortgageAmount, user,mortgageCurrentAmount, mortgageTerm);
+
             return mortgageDAO.updateMortgage(mortgage);
         }else {
             return false;

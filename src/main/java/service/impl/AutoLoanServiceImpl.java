@@ -60,6 +60,7 @@ public class AutoLoanServiceImpl implements AutoLoanService {
         if (!this.userDAO.isPassportNumberAvailable(userPassportNumber)) {
             final User user = this.userDAO.getUserByPassportNumber(userPassportNumber);
             final AutoLoan autoLoan = new AutoLoan(autoLoanId, amount, currentAmount, termInMonths, user);
+
             return this.autoLoanDAO.updateAutoLoan(autoLoan);
         } else {
             return false;

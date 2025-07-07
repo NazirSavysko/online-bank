@@ -18,5 +18,7 @@ public interface DebitCardDAO {
     void deleteDebitCard(int id);
 
     Optional<DebitCardDTO> getDebitCardById(int id);
+
+    DebitCard getDebitCardByCardNumber(String CardNumber);
 }
 

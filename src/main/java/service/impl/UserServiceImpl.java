@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
                     .passportNumber(passportNumber)
                     .dateOfBirth(dataOfBirth)
                     .build();
+
             return userDAO.saveUser(user);
         } else {
             throw new IllegalArgumentException("UserDTO with passport number '%s' already exists".formatted(passportNumber));
@@ -59,6 +60,7 @@ public class UserServiceImpl implements UserService {
                     .passportNumber(passportNumber)
                     .dateOfBirth(dataOfBirth)
                     .build();
+
             return userDAO.updateUser(user);
         } else {
             return false;
